@@ -25,6 +25,24 @@ export const DATA = [
   { name: 'flax_fiber_composite', category: 'biocomposite', density: 1300, tensile_strength_mpa: 70, max_temp_c: 130, cost_per_kg: 7.0, co2e_per_kg: 1.5, recyclability_score: 0.2, durability_years: 15, outdoor_safe: false, food_safe: false, source_url: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6981686/', source_note: 'Tensile 70 MPa = plain flax/epoxy composite (cited study: 68.12 MPa). CO2e 1.50 estimated: flax fibre is low-carbon but epoxy matrix dominates; no single sourced composite figure. Cost ~mid-2026, approximate. Recyclability 0.20: thermoset-bonded composite, not recyclable.' },
   { name: 'mycelium_foam', category: 'natural', density: 100, tensile_strength_mpa: 0.2, max_temp_c: 120, cost_per_kg: 3.0, co2e_per_kg: 0.4, recyclability_score: 0.7, durability_years: 5, outdoor_safe: false, food_safe: false, source_url: 'https://www.fiberjournal.com/mycelium-based-biomaterials/', source_note: 'CO2e 0.40: cited review reports embodied carbon <0.5 kg CO2e/kg for mycelium grown on waste (can be carbon-negative on a cradle-to-gate basis). Tensile ~0.2 MPa estimated (foam is weak in tension, used in compression/packaging). Cost ~mid-2026, approximate. Recyclability 0.70: mono bio-material, home/industrial compostable though not part of a recycling stream. outdoor_safe false: moisture-sensitive.' },
   { name: 'wool_felt', category: 'natural', density: 300, tensile_strength_mpa: 4, max_temp_c: 140, cost_per_kg: 12.0, co2e_per_kg: 2.9, recyclability_score: 0.6, durability_years: 15, outdoor_safe: false, food_safe: false, source_url: 'https://historicengland.org.uk/research/heritage-counts/heritage-and-environment/avoiding-embodied-carbon-production/construction-materials-embodied-carbon/', source_note: 'CO2e 2.90 estimated: processed wool textile/felt values vary widely (~1-6 kg CO2e/kg depending on farming allocation and scouring); treat as indicative. Tensile ~4 MPa estimated (nonwoven felt, low tensile). Cost ~mid-2026 industrial felt, approximate. Recyclability 0.60: mono natural fibre, biodegradable but limited recycling infrastructure. source_url is a general embodied-carbon reference, not wool-specific.' },
+
+  // --- Bio-based alternatives from the Materiom Commons -------------------
+  // Materiom (materiom.org) is an open database of recipes for materials made
+  // from abundant natural ingredients. These entries represent recipe FAMILIES
+  // catalogued there. Materiom publishes recipes and measured performance —
+  // not the standardised cradle-gate CO2e / market cost this app ranks on — so
+  // every numeric field below is an INDICATIVE ESTIMATE for the material class,
+  // not a measured value from one specific recipe. They carry source:'materiom'
+  // so the UI can credit and deep-link them; treat the numbers as directional.
+  { name: 'chitosan_bioplastic', category: 'bioplastic', density: 1250, tensile_strength_mpa: 40, max_temp_c: 90, cost_per_kg: 8.0, co2e_per_kg: 1.2, recyclability_score: 0.8, durability_years: 3, outdoor_safe: false, food_safe: true, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Biopolymer film cast from chitosan derived from crustacean-shell waste + a plasticiser. Tensile ~40 MPa and Tg/service ~90C are typical of chitosan films (literature range, not a measured Materiom value). CO2e ~1.2 est.: bio-based, low embodied carbon, but not sourced to a single figure. Cost is a rough ingredient estimate, highly variable at DIY scale. Home-compostable → high circularity. Explore/refine the actual open recipes in the Materiom Commons.' },
+  { name: 'alginate_bioplastic', category: 'bioplastic', density: 1300, tensile_strength_mpa: 30, max_temp_c: 80, cost_per_kg: 6.0, co2e_per_kg: 0.9, recyclability_score: 0.85, durability_years: 2, outdoor_safe: false, food_safe: true, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Film/bioplastic from sodium alginate (brown-seaweed extract) cross-linked with calcium + glycerol. Tensile ~30 MPa typical of alginate films (literature, not measured here). CO2e ~0.9 est.: algae-derived, low embodied carbon, not sourced to one figure. Cost is a rough ingredient estimate. Marine-degradable / compostable → high circularity; moisture-sensitive. See the Materiom Commons for the real recipes.' },
+  { name: 'agar_bioplastic', category: 'bioplastic', density: 1300, tensile_strength_mpa: 25, max_temp_c: 80, cost_per_kg: 9.0, co2e_per_kg: 1.0, recyclability_score: 0.85, durability_years: 2, outdoor_safe: false, food_safe: true, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Agar (red-algae) + glycerol cast film, a common Materiom starter recipe. Tensile ~25 MPa (literature range). CO2e ~1.0 est.: bio-based, indicative only. Cost is a rough ingredient estimate. Home-compostable; brittle/moisture-sensitive without additives. Refine against the open recipes in the Materiom Commons.' },
+  { name: 'gelatin_bioplastic', category: 'bioplastic', density: 1300, tensile_strength_mpa: 35, max_temp_c: 70, cost_per_kg: 5.0, co2e_per_kg: 1.3, recyclability_score: 0.8, durability_years: 2, outdoor_safe: false, food_safe: true, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Protein bioplastic from gelatin (animal collagen by-product) + glycerol. Tensile ~35 MPa (literature). CO2e ~1.3 est.: bio-based but animal-derived allocation varies; indicative only. Cost is a rough ingredient estimate. Compostable; low service temperature. See the Materiom Commons.' },
+  { name: 'starch_bioplastic', category: 'bioplastic', density: 1300, tensile_strength_mpa: 20, max_temp_c: 75, cost_per_kg: 2.5, co2e_per_kg: 1.1, recyclability_score: 0.85, durability_years: 2, outdoor_safe: false, food_safe: true, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Thermoplastic starch from corn/potato/cassava starch + glycerol, one of the most-documented Materiom recipe families. Tensile ~20 MPa (literature, plasticiser-dependent). CO2e ~1.1 est.: crop-derived, indicative only. Cost is a rough ingredient estimate. Home-compostable; moisture-sensitive. Explore the open recipes in the Materiom Commons.' },
+  { name: 'cellulose_biocomposite', category: 'biocomposite', density: 1300, tensile_strength_mpa: 60, max_temp_c: 120, cost_per_kg: 4.0, co2e_per_kg: 1.0, recyclability_score: 0.5, durability_years: 10, outdoor_safe: false, food_safe: false, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Plant-cellulose / nanocellulose reinforced bio-composite. Tensile ~60 MPa (wide literature range by fibre loading; not measured here). CO2e ~1.0 est.: bio-based, indicative only. Cost is a rough estimate. Recyclability moderate: often bound in a matrix. See the Materiom Commons for specific formulations.' },
+  { name: 'coffee_ground_composite', category: 'biocomposite', density: 1200, tensile_strength_mpa: 25, max_temp_c: 100, cost_per_kg: 2.0, co2e_per_kg: 0.7, recyclability_score: 0.4, durability_years: 8, outdoor_safe: false, food_safe: false, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Spent-coffee-ground filler in a bio-binder — a waste-stream composite typical of the Materiom Commons. Tensile ~25 MPa est. (binder-dependent). CO2e ~0.7 est.: uses a waste feedstock, low embodied carbon, indicative only. Cost is a rough estimate. Recyclability limited once bound. Refine against the real recipes in the Materiom Commons.' },
+  { name: 'eggshell_biocomposite', category: 'biocomposite', density: 1600, tensile_strength_mpa: 30, max_temp_c: 130, cost_per_kg: 2.0, co2e_per_kg: 0.6, recyclability_score: 0.4, durability_years: 10, outdoor_safe: false, food_safe: false, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Eggshell-derived calcium-carbonate filler in a bio-binder (a mineral waste-stream composite). Tensile ~30 MPa est. CO2e ~0.6 est.: waste-derived mineral filler, low embodied carbon, indicative only. Cost is a rough estimate. Recyclability limited once bound. See the Materiom Commons.' },
+  { name: 'bacterial_cellulose', category: 'natural', density: 1000, tensile_strength_mpa: 20, max_temp_c: 120, cost_per_kg: 15.0, co2e_per_kg: 0.8, recyclability_score: 0.8, durability_years: 3, outdoor_safe: false, food_safe: false, source: 'materiom', source_url: 'https://materials-database.materiom.org/commons', source_note: 'INDICATIVE (Materiom recipe family). Bacterial cellulose grown by a kombucha-style SCOBY into a leather-like sheet. Tensile ~20 MPa est. (dry, highly process-dependent). CO2e ~0.8 est.: grown on sugar feedstock, low embodied carbon, indicative only. Cost is a rough estimate reflecting slow growth. Home-compostable; moisture-sensitive. Explore the grow-protocols in the Materiom Commons.' },
 ]
 
 // Demo bill of materials — an ergonomic task chair, each component mapped from a
@@ -38,14 +56,15 @@ export const BOM = [
   { component: 'Fasteners & brackets', from: 'steel', to: 'recycled_steel', kg: 0.3 },
 ]
 
+// Category identity colours — muted, earthy tones for the warm paper canvas.
 export const CAT_COLORS = {
-  metal: '#475569',
-  plastic: '#B45309',
-  bioplastic: '#0E7490',
-  wood: '#92400E',
-  natural: '#15803D',
-  biocomposite: '#4338CA',
-  composite: '#9F1239',
+  metal: '#5E6B7A',
+  plastic: '#A87A3C',
+  bioplastic: '#3E8C93',
+  wood: '#96703E',
+  natural: '#5B7A4E',
+  biocomposite: '#6E63B0',
+  composite: '#B0576E',
 }
 
 export const CATEGORIES = ['all', 'metal', 'plastic', 'bioplastic', 'wood', 'natural', 'biocomposite', 'composite']
@@ -54,16 +73,20 @@ export function mat(name) {
   return DATA.find((d) => d.name === name)
 }
 
+// Embodied carbon read as a status band: low (green) → mid (amber) → high (rose).
+// Unsourced metrics (null/undefined) render neutral rather than fabricating a bin.
 export function co2eColor(v) {
-  return v <= 1 ? '#15803D' : v <= 3 ? '#B45309' : '#B91C1C'
+  if (v == null) return '#8A857A'
+  return v <= 1 ? '#5B7A4E' : v <= 3 ? '#A87A3C' : '#B0576E'
 }
 
 export function recycColor(v) {
-  return v >= 0.7 ? '#16A34A' : v >= 0.45 ? '#CA8A04' : '#DC2626'
+  if (v == null) return '#8A857A'
+  return v >= 0.7 ? '#5B7A4E' : v >= 0.45 ? '#A87A3C' : '#B0576E'
 }
 
 export function fmtCost(v) {
-  return '$' + v.toFixed(2)
+  return v == null ? '—' : '$' + v.toFixed(2)
 }
 
 // Build a CSV string of the full material library for the download buttons.
@@ -71,10 +94,10 @@ export function datasetCsv() {
   const cols = [
     'name', 'category', 'density', 'tensile_strength_mpa', 'max_temp_c',
     'cost_per_kg', 'co2e_per_kg', 'recyclability_score', 'durability_years',
-    'outdoor_safe', 'food_safe', 'source_url', 'source_note',
+    'outdoor_safe', 'food_safe', 'source', 'source_url', 'source_note',
   ]
   const esc = (v) => {
-    const s = String(v)
+    const s = v == null ? '' : String(v)
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
   }
   const lines = [cols.join(',')]

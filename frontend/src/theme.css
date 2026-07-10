@@ -1,20 +1,59 @@
-/* Global resets + shared element styling for MaterialSwap.
-   Component layout lives inline in App.jsx to match the reference design. */
+/* ecocompass — Sustainable swap engine.
+   Warm paper canvas, forest-green accent. Nunito carries all UI type;
+   Geist Mono carries data values (cost, CO2e, tensile, category tags).
+   Component layout lives inline in App.jsx; this file owns the global canvas,
+   type faces, links, focus and print rules. */
+
+:root {
+  --page: #F4F1EA;      /* page background — warm paper */
+  --card: #FBFAF6;      /* raised surfaces: cards, panels, inputs */
+  --card-alt: #F2EEE3;  /* row hover */
+
+  --ink: #23211C;       /* primary text */
+  --ink-2: #4A463C;     /* secondary body */
+  --ink-3: #6E6A5F;     /* tertiary */
+  --muted: #8A857A;     /* muted labels */
+  --faint: #A39C8C;     /* disabled / strikethrough */
+
+  --line: #E3DCCD;      /* default hairline border */
+  --line-2: #EDE7DA;    /* subtle inner border */
+
+  --accent: #1E3D2B;    /* forest green accent */
+  --accent-soft: rgba(30, 61, 43, 0.10);
+
+  --good: #5B7A4E;      /* success / low-impact */
+  --warn: #A87A3C;      /* warning / mid */
+  --bad:  #B0576E;      /* negative / high */
+}
 
 * { box-sizing: border-box; }
 
+html, body { background: var(--page); }
+
 body {
   margin: 0;
-  font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-a { color: #1D4ED8; text-decoration: none; }
-a:hover { color: #1E3A8A; }
+.mono { font-family: 'Geist Mono', 'Nunito', ui-monospace, monospace; }
 
-button { font-family: 'IBM Plex Sans', sans-serif; }
+a { color: var(--ink); text-decoration: none; }
+a:hover { color: #000; }
 
-::-webkit-scrollbar { height: 10px; width: 10px; }
-::-webkit-scrollbar-thumb { background: #C7D6EE; border-radius: 8px; }
+button { font-family: 'Nunito', sans-serif; }
+
+::selection { background: rgba(35, 33, 28, 0.10); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+::-webkit-scrollbar { height: 9px; width: 9px; }
+::-webkit-scrollbar-thumb { background: #DAD4C6; border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff !important; }
+}
