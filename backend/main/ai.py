@@ -24,6 +24,7 @@ import anthropic
 
 from materials import DATA
 from score import analyze_bom
+from main import score_repairability  # design-longevity engine (backend/data)
 
 # Opus 4.8 for both by default: strong at grounded writing and vision/PDF
 # extraction. Override with ANTHROPIC_MODEL in backend/.env — e.g.
@@ -50,19 +51,34 @@ def ai_configured():
 # 1) Swap narrative
 # ---------------------------------------------------------------------------
 _NARRATIVE_SYSTEM = """You are a materials-sustainability analyst. You are given a JSON object with the
-results of a bill-of-materials swap analysis that has ALREADY been computed by a
-deterministic engine. Write a concise briefing (3-5 sentences, plain prose — no
-markdown, no headings, no bullet points) for an engineer or procurement reviewer.
+results of a bill-of-materials analysis that has ALREADY been computed by two
+deterministic engines: a CARBON engine (lower-embodied-carbon material swaps) and
+a DESIGN-LONGEVITY engine (how repairable and long-lived the build is). Write a
+concise briefing (4-6 sentences, plain prose — no markdown, no headings, no bullet
+points) for an engineer or procurement reviewer.
 
 Rules:
 - Use ONLY the numbers and facts in the JSON. Never invent, round differently, or
   estimate any figure.
-- Lead with the headline outcome: embodied carbon saved and the cost impact.
-- Name one or two of the strongest component swaps by name.
+- Lead with the blended OVERALL score/grade, then give its two halves: the carbon
+  result (co2e saved, cost impact, and the "carbon score") and the repairability
+  result (the "repairability score" and grade). The carbon score is NOT the
+  overall score — do not conflate them. Write score names as natural prose
+  ("carbon score", "repairability score"), never the raw JSON key spellings.
+- Name one or two of the strongest carbon swaps by component name.
+- Name the single highest-impact design fix from top_design_fixes (its component
+  and action) as the clearest way to raise the repairability score.
 - If any component has status "red" it was flagged and kept as-is — say so and
-  give the rejection reason from the data. This honesty is the whole point; do
-  not gloss over it.
+  give the rejection reason. This honesty is the whole point; do not gloss over it.
 - Neutral, factual tone. No emoji, no salesy language."""
+
+
+def _overall(eco, repair):
+    return round(0.5 * eco + 0.5 * repair)
+
+
+def _grade(score):
+    return "A" if score >= 90 else "B" if score >= 75 else "C" if score >= 60 else "D" if score >= 45 else "F"
 
 
 def _narrative_facts(bom, weights, product_name):
@@ -82,8 +98,21 @@ def _narrative_facts(bom, weights, product_name):
             "note": l["statusReason"],
             "top_rejection": (f"{rej['material']}: {rej['reasons'][0]}" if rej else None),
         })
+
+    # Design-longevity engine (backend/data) — best-effort so the narrative still
+    # works if the reference libraries are missing.
+    repair = None
+    try:
+        repair = score_repairability([
+            {"component": b.get("component", ""), "material": b.get("from", ""),
+             "fastening": b.get("fastening", ""), "sourcing": b.get("sourcing", "")}
+            for b in bom
+        ])
+    except Exception:  # noqa: BLE001
+        repair = None
+
     carbon = res["weights"]["carbon"]
-    return {
+    facts = {
         "product": product_name,
         "priority": f"{round(carbon * 100)}% carbon / {round((1 - carbon) * 100)}% cost",
         "summary": {
@@ -93,11 +122,25 @@ def _narrative_facts(bom, weights, product_name):
             "cost_increased": s["costUp"],
             "recommended_swaps": s["viableCount"],
             "flagged_components": s["flaggedCount"],
-            "eco_score": s["ecoScore"],
-            "eco_grade": s["ecoGrade"],
+            "carbon_eco_score": s["ecoScore"],
+            "carbon_eco_grade": s["ecoGrade"],
         },
         "components": components,
     }
+    if repair:
+        overall = _overall(s["ecoScore"], repair["score"])
+        facts["summary"].update({
+            "repairability_score": repair["score"],
+            "repairability_grade": repair["grade"],
+            "repairability_label": repair["label"],
+            "overall_score": overall,
+            "overall_grade": _grade(overall),
+        })
+        facts["top_design_fixes"] = [
+            {"component": f["component"], "action": f["action"], "gain_points": f.get("gain")}
+            for f in repair["recommendations"][:3]
+        ]
+    return facts
 
 
 def generate_narrative(bom, weights=None, product_name="This build"):
