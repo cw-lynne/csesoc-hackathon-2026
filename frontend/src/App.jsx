@@ -36,9 +36,9 @@ function downloadCsv(text, name) {
 
 const downloadDataset = () => downloadCsv(datasetCsv(), 'materials_dataset.csv')
 
-// Meta describing the built-in sample BOM (the ergonomic task chair).
+// Meta describing the built-in sample BOM (the cordless handheld vacuum).
 const SAMPLE_META = {
-  productName: 'Ergo Task Chair · TC-200',
+  productName: 'Cordless Handheld Vacuum · HV-90',
   componentCount: BOM.length,
   totalKg: BOM.reduce((s, b) => s + b.kg, 0),
   note: 'sample bill of materials',

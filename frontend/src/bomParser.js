@@ -251,9 +251,9 @@ export function parseBomFile(file) {
 export function bomTemplateCsv() {
   return [
     'component,material,kg',
-    'Base column,steel,2.4',
-    'Support frame,aluminum,1.8',
-    'Seat shell,ABS,1.2',
-    'Cushion backing,PET,0.6',
+    'Outer casing,ABS,0.35',
+    'Motor housing,aluminum,0.22',
+    'Drive motor,steel,0.4',
+    'Dust filter,ABS,0.12',
   ].join('\n')
 }
