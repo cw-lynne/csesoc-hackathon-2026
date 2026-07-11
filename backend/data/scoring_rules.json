@@ -1,0 +1,84 @@
+{
+  "description": "Heuristic scoring rules for BOM sustainability, longevity, repairability, and recycling potential. Use for hackathon/demo purposes only.",
+  "base_score": 70,
+  "material_recycling_potential": {
+    "high": 8,
+    "medium": 3,
+    "low": -6,
+    "unknown": -3
+  },
+  "material_durability_score_to_delta": {
+    "9-10": 7,
+    "7-8": 4,
+    "5-6": 0,
+    "3-4": -4,
+    "0-2": -8
+  },
+  "component_failure_risk": {
+    "low": 2,
+    "medium": -2,
+    "high": -6
+  },
+  "component_repair_importance": {
+    "low": 1,
+    "medium": 3,
+    "high": 6
+  },
+  "fastening_type": {
+    "screwed": 8,
+    "stitched": 7,
+    "clipped": 5,
+    "snap-fit": 3,
+    "connector": 4,
+    "riveted": -5,
+    "soldered": -8,
+    "glued": -12,
+    "bonded": -12,
+    "welded": -12,
+    "sealed": -15,
+    "potted": -15,
+    "unknown": -3
+  },
+  "sourcing_type": {
+    "standard": 7,
+    "widely available": 6,
+    "multi-source": 5,
+    "single-source": -8,
+    "proprietary": -12,
+    "unknown": -3
+  },
+  "lifespan_years_average_to_delta": {
+    "10+": 7,
+    "6-9": 4,
+    "3-5": 0,
+    "1-2": -4,
+    "0-1": -7
+  },
+  "grade_bands": [
+    {
+      "min": 90,
+      "grade": "A",
+      "label": "Excellent longevity"
+    },
+    {
+      "min": 80,
+      "grade": "B",
+      "label": "Strong longevity"
+    },
+    {
+      "min": 65,
+      "grade": "C",
+      "label": "Moderate longevity"
+    },
+    {
+      "min": 50,
+      "grade": "D",
+      "label": "Weak longevity"
+    },
+    {
+      "min": 0,
+      "grade": "F",
+      "label": "High replacement risk"
+    }
+  ]
+}
