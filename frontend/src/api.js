@@ -12,3 +12,15 @@ export async function uploadCsv(file) {
   }
   return res.json()
 }
+
+export async function analyzeCsv(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const res = await fetch('/api/analyze-csv', { method: 'POST', body: formData })
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw new Error(body?.detail || `Analysis failed (${res.status})`)
+  }
+  return res.json()
+}
