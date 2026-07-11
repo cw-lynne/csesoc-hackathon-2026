@@ -113,6 +113,14 @@ function affinity(cand, f) {
   return cand.category === f.category ? 0.35 : 0
 }
 
+// The base material a name refers to, ignoring a recycled_ prefix / grade suffix
+// — so 'aluminum_6061' and 'recycled_aluminum' share base 'aluminum'.
+const baseMaterial = (name) => (name ? name.replace(/^recycled_/, '').split('_')[0].toLowerCase() : '')
+
+// Strong preference for recycling the SAME material (e.g. aluminium → recycled
+// aluminium) over switching to a different one — the intuitive swap.
+const sameMaterial = (cand, f) => (baseMaterial(cand.name) === baseMaterial(f.name) ? 0.5 : 0)
+
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
 // Weighted improvement of a candidate over the original. `carbonWeight` ∈ [0,1]
@@ -127,7 +135,7 @@ function scoreCandidate(cand, f, carbonWeight) {
   const recycGain = cand.recyclability_score - f.recyclability_score
   const durGain = clamp((cand.durability_years - f.durability_years) / Math.max(f.durability_years, 1), -1, 1)
   const w = carbonWeight
-  return w * carbonGain + (1 - w) * costGain + 0.15 * recycGain + 0.05 * durGain + affinity(cand, f)
+  return w * carbonGain + (1 - w) * costGain + 0.15 * recycGain + 0.05 * durGain + affinity(cand, f) + sameMaterial(cand, f)
 }
 
 // Reuse across the app: derive the pros/cons of a from→to swap.

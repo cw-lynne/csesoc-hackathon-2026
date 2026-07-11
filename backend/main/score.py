@@ -114,13 +114,25 @@ def _affinity(cand, f):
     return 0.35 if cand["category"] == f["category"] else 0
 
 
+def _base_material(name):
+    """The base material a name refers to, ignoring a recycled_ prefix / grade
+    suffix — so 'aluminum_6061' and 'recycled_aluminum' share base 'aluminum'."""
+    return name.replace("recycled_", "", 1).split("_")[0].lower() if name else ""
+
+
+def _same_material(cand, f):
+    """Strong preference for recycling the SAME material (e.g. aluminium →
+    recycled aluminium) over switching to a different one — the intuitive swap."""
+    return 0.5 if _base_material(cand["name"]) == _base_material(f["name"]) else 0
+
+
 def score_candidate(cand, f, carbon_weight):
     carbon_gain = clamp((f["co2e_per_kg"] - cand["co2e_per_kg"]) / f["co2e_per_kg"], -1, 1)
     cost_gain = clamp((f["cost_per_kg"] - cand["cost_per_kg"]) / f["cost_per_kg"], -1, 1)
     recyc_gain = cand["recyclability_score"] - f["recyclability_score"]
     dur_gain = clamp((cand["durability_years"] - f["durability_years"]) / max(f["durability_years"], 1), -1, 1)
     w = carbon_weight
-    return w * carbon_gain + (1 - w) * cost_gain + 0.15 * recyc_gain + 0.05 * dur_gain + _affinity(cand, f)
+    return w * carbon_gain + (1 - w) * cost_gain + 0.15 * recyc_gain + 0.05 * dur_gain + _affinity(cand, f) + _same_material(cand, f)
 
 
 def pros_cons_for(f, t):

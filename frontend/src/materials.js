@@ -60,7 +60,7 @@ export const DATA = [
 // of parts here are deliberately sub-optimal (single-sourced motor, soldered
 // switch) so the design-fix recommendations have something real to surface.
 export const BOM = [
-  { component: 'Outer casing', from: 'ABS', kg: 0.35, fastening: 'screwed', sourcing: 'standard', req: { tensile: 30, maxTemp: 70 } },
+  { component: 'Outer casing', from: 'aluminum_6061', kg: 0.35, fastening: 'screwed', sourcing: 'standard', req: { tensile: 150, maxTemp: 120 } },
   { component: 'Motor housing', from: 'aluminum_6061', kg: 0.22, fastening: 'screwed', sourcing: 'standard', req: { tensile: 120, maxTemp: 120 } },
   { component: 'Drive motor', from: 'steel', kg: 0.40, fastening: 'screwed', sourcing: 'single-source', req: { tensile: 300, maxTemp: 150 } },
   { component: 'Cooling fan', from: 'ABS', kg: 0.06, fastening: 'clipped', sourcing: 'widely available', req: { tensile: 25, maxTemp: 80 } },
