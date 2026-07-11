@@ -375,7 +375,7 @@ function disclaimer(r) {
   r.need(40)
   r.y += 6
   r.paragraph(
-    'Cost and CO2e are computed from the ecocompass material library; figures marked "estimated" in the dataset are indicative, not sourced to a single figure. Materiom recipe families carry directional numbers for a material class, not measured values from one recipe. The repairability score is a transparent point model (base 70 with deltas for fastening, sourcing, failure risk, recycling potential and service life; see scoring_rules.json).',
+    'Cost and CO2e are computed from the ecocompass material library; figures marked "estimated" in the dataset are indicative, not sourced to a single figure. Bio-based material families carry directional numbers for a material class, not measured values from one recipe. The repairability score is a transparent point model — a base score adjusted for fastening, sourcing, failure risk, recycling potential and service life.',
     { size: 8, color: C.faint, lh: 1.5 }
   )
 }

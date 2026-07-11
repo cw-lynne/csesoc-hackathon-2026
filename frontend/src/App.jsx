@@ -60,8 +60,8 @@ const btnSolid = { display: 'inline-flex', alignItems: 'center', gap: 7, backgro
 const btnGhost = { display: 'inline-flex', alignItems: 'center', gap: 7, background: T.card, color: T.ink, border: `1px solid ${T.line}`, fontSize: 13, fontWeight: 500, padding: '10px 15px', borderRadius: 9, cursor: 'pointer' }
 const eyebrow = { fontSize: 11, fontWeight: 400, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.18em' }
 
-// How many library entries are credited to the Materiom Commons.
-const MATERIOM_COUNT = DATA.filter((d) => d.source === 'materiom').length
+// How many library entries are bio-based alternatives.
+const BIO_COUNT = DATA.filter((d) => d.source === 'materiom').length
 
 // Human-readable material name for dropdowns / labels (drops the internal underscores).
 const prettyMat = (name) => String(name || '').replace(/_/g, ' ')
@@ -71,11 +71,11 @@ const MATERIAL_GROUPS = CATEGORIES.filter((c) => c !== 'all')
   .map((cat) => ({ cat, items: DATA.filter((d) => d.category === cat) }))
   .filter((g) => g.items.length)
 
-// Credits a bio-based recipe family to the Materiom Commons.
-function MateriomBadge({ big }) {
+// Marks a bio-based material family in the library.
+function BioBadge({ big }) {
   return (
-    <span title="Bio-based recipe family catalogued in the Materiom Commons" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(91,122,78,0.12)', border: '1px solid rgba(91,122,78,0.34)', color: T.good, fontSize: big ? 10.5 : 9.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: big ? '3px 9px' : '2px 6px', borderRadius: 6, whiteSpace: 'nowrap' }}>
-      <span style={{ width: 5, height: 5, borderRadius: 99, background: T.good }} /> Materiom
+    <span title="Bio-based material family" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(91,122,78,0.12)', border: '1px solid rgba(91,122,78,0.34)', color: T.good, fontSize: big ? 10.5 : 9.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: big ? '3px 9px' : '2px 6px', borderRadius: 6, whiteSpace: 'nowrap' }}>
+      <span style={{ width: 5, height: 5, borderRadius: 99, background: T.good }} /> Bio-based
     </span>
   )
 }
@@ -104,10 +104,7 @@ function TopNav({ view, setView }) {
               <>
                 <button onClick={() => setView(isBom ? view : 'upload')} style={tab(isBom)}>Analyze BOM</button>
                 <button onClick={() => setView('library')} style={tab(view === 'library')}>Material library</button>
-                <button onClick={() => setView('scan')} style={{ ...tab(view === 'scan'), display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  Scan a product
-                  <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.good, background: 'rgba(91,122,78,0.14)', borderRadius: 5, padding: '1px 5px' }}>Free</span>
-                </button>
+                <button onClick={() => setView('scan')} style={tab(view === 'scan')}>Scan a product</button>
               </>
             )
           })()}
@@ -269,7 +266,7 @@ function CandidatesTable({ line }) {
                 <tr key={c.material} style={{ background: chosen ? STATUS.green.soft : 'transparent' }}>
                   <td style={td}>
                     <span className="mono" style={{ fontWeight: chosen ? 700 : 500, fontSize: 11.5 }}>{c.material}</span>
-                    {c.source === 'materiom' && <span style={{ marginLeft: 6 }}><MateriomBadge /></span>}
+                    {c.source === 'materiom' && <span style={{ marginLeft: 6 }}><BioBadge /></span>}
                   </td>
                   <td style={{ ...numTd, color: co2eColor(c.co2e) }}>{c.co2e.toFixed(2)}</td>
                   <td style={numTd}>{fmtCost(c.cost)}</td>
@@ -416,7 +413,7 @@ function LibraryPanel({ library, repair }) {
       )}
       <div className="mono" style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 7 }}>
         Reference library
-        <span style={{ textTransform: 'none', letterSpacing: 0, color: T.faint, fontFamily: 'Nunito, sans-serif', fontSize: 10.5 }}>· repairability &amp; circularity · backend/data</span>
+        <span style={{ textTransform: 'none', letterSpacing: 0, color: T.faint, fontFamily: 'Nunito, sans-serif', fontSize: 10.5 }}>· repairability &amp; circularity</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <RefCard
@@ -553,7 +550,6 @@ function AiSummary({ narrative, onRegenerate }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Icon size={15} stroke={T.accent} sw={1.9} d={sparkle} />
           <span style={{ fontSize: 13.5, fontWeight: 600 }}>AI summary</span>
-          <span className="mono no-print" style={{ fontSize: 9.5, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', border: `1px solid ${T.line}`, borderRadius: 99, padding: '2px 7px' }}>Claude</span>
         </div>
         {!narrative.loading && (
           <div className="no-print" style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
@@ -1168,7 +1164,7 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
                 {source === 'backend' ? 'via API' : 'offline engine'}
               </span>
               {summary.library && (
-                <span className="no-print mono" title="Components / materials recognised in the backend/data reference library (repairability & circularity)"
+                <span className="no-print mono" title="Components / materials recognised in the reference library (repairability & circularity)"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: T.ink3, background: T.cardAlt, border: `1px solid ${T.line}`, borderRadius: 99, padding: '3px 10px' }}>
                   <Icon size={11} stroke={T.accent} sw={2} d={['M12 2 2 7l10 5 10-5-10-5z', 'm2 17 10 5 10-5', 'm2 12 10 5 10-5']} />
                   library {summary.library.componentsKnown}/{summary.library.total} comp · {summary.library.materialsKnown}/{summary.library.total} mat
@@ -1216,7 +1212,7 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
           </div>
 
           <div className="no-print" style={{ fontSize: 11.5, color: T.faint, marginTop: 18, lineHeight: 1.65 }}>
-            Rankings recompute live from the priority slider. A swap is only offered when it clears the part's functional requirements — anything that fails is flagged with the specific reason, never silently dropped. The repairability score is a transparent point model (base 70 ± deltas for fastening, sourcing, failure risk, recycling and service life — see <span className="mono">scoring_rules.json</span>). Figures marked <em>estimated</em> in the dataset are indicative.
+            Rankings recompute live from the priority slider. A swap is only offered when it clears the part's functional requirements — anything that fails is flagged with the specific reason, never silently dropped. The repairability score is a transparent point model — a base score adjusted for fastening, sourcing, failure risk, recycling and service life. Figures marked <em>estimated</em> in the dataset are indicative.
           </div>
 
           <IncentivesPanel
@@ -1259,7 +1255,7 @@ function LibraryView({ query, setQuery, category, setCategory, sortKey, sortDir,
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 26 }}>
         <div>
           <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.03em' }}>Material library</div>
-          <div style={{ fontSize: 13.5, color: T.muted, marginTop: 4 }}>{DATA.length} materials · <span style={{ color: T.good }}>{MATERIOM_COUNT} bio-based via the Materiom Commons</span></div>
+          <div style={{ fontSize: 13.5, color: T.muted, marginTop: 4 }}>{DATA.length} materials · <span style={{ color: T.good }}>{BIO_COUNT} bio-based alternatives</span></div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={openSuggest} style={btnGhost}>
@@ -1317,7 +1313,7 @@ function LibraryView({ query, setQuery, category, setCategory, sortKey, sortDir,
                       <div className="mono" style={{ fontWeight: 500, fontSize: 12.5 }}>{r.name}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
                         <span className="mono" style={{ fontSize: 10, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.06em', color: cc }}>{r.category}</span>
-                        {r.source === 'materiom' && <MateriomBadge />}
+                        {r.source === 'materiom' && <BioBadge />}
                       </div>
                     </td>
                     <td className="mono" style={{ padding: '14px 12px', textAlign: 'right', borderBottom: `1px solid ${T.line2}`, color: T.ink2 }}>{r.tensile_strength_mpa}</td>
@@ -1441,7 +1437,7 @@ function DetailDrawer({ material, onClose }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <div className="mono" style={{ fontSize: 10.5, fontWeight: 400, color: accent, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{m.category}</div>
-              {m.source === 'materiom' && <MateriomBadge big />}
+              {m.source === 'materiom' && <BioBadge big />}
             </div>
             <div className="mono" style={{ fontSize: 21, fontWeight: 600, marginTop: 6, color: T.ink }}>{m.name}</div>
           </div>
@@ -1460,7 +1456,7 @@ function DetailDrawer({ material, onClose }) {
           <div style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, background: T.page, border: `1px solid ${T.line}`, borderRadius: 11, padding: '15px 16px' }}>{m.source_note}</div>
         </div>
         <a href={m.source_url} target="_blank" rel="noopener noreferrer" style={{ ...btnSolid, marginTop: 20, textDecoration: 'none' }}>
-          <Icon size={15} stroke={T.page} d={['M15 3h6v6', 'M10 14 21 3', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6']} /> {m.source === 'materiom' ? 'Explore in the Materiom Commons' : 'Open primary source'}
+          <Icon size={15} stroke={T.page} d={['M15 3h6v6', 'M10 14 21 3', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6']} /> Open primary source
         </a>
       </div>
     </div>
