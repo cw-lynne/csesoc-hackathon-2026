@@ -28,9 +28,10 @@ export default function ScanView() {
     }
   }
 
-  const runPhoto = async (e) => {
-    const file = e.target.files?.[0]
-    if (file) e.target.value = '' // allow re-selecting the same file
+  // Scan a photo File/Blob — used by both the file picker and the live-camera
+  // "Capture" button (which hands us a still frame on browsers without the
+  // native barcode detector).
+  const scanFile = async (file) => {
     if (!file) return
     setBusy(true); setBusyLabel('Reading photo…'); setError(''); setScan(null)
     try {
@@ -42,13 +43,18 @@ export default function ScanView() {
     }
   }
 
+  const runPhoto = (e) => {
+    const file = e.target.files?.[0]
+    if (file) e.target.value = '' // allow re-selecting the same file
+    scanFile(file)
+  }
+
   const reset = () => { setScan(null); setError('') }
 
   return (
     <div style={{ maxWidth: 620, margin: '0 auto', padding: '48px 24px 96px' }}>
-      {/* Header — clearly the free consumer tool. */}
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(91,122,78,0.12)', border: '1px solid rgba(91,122,78,0.32)', color: T.good, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', padding: '5px 11px', borderRadius: 99 }}>
-        Free · no sign-up
+      <div className="mono" style={{ fontSize: 11, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+        Instant product score
       </div>
       <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', margin: '16px 0 10px', lineHeight: 1.1 }}>
         Scan a product
@@ -60,7 +66,7 @@ export default function ScanView() {
 
       {!scan && (
         <>
-          <BarcodeScanner onDetected={runBarcode} busy={busy} />
+          <BarcodeScanner onDetected={runBarcode} onCapture={scanFile} busy={busy} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0' }}>
             <div style={{ flex: 1, height: 1, background: T.line }} />
