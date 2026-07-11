@@ -2,12 +2,19 @@ import sys
 from pathlib import Path
 
 import anthropic
+from dotenv import load_dotenv
 from fastapi import Body, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+# Load backend/.env (your ANTHROPIC_API_KEY lives there) before anything reads
+# the environment. An already-set env var wins over the file.
+load_dotenv(BACKEND_DIR / ".env")
+
 # backend/main holds the CSV/processing pipeline (parse.py, score.py, ...);
 # it isn't a package, so add it to the path to import from it.
-sys.path.append(str(Path(__file__).resolve().parent.parent / "main"))
+sys.path.append(str(BACKEND_DIR / "main"))
 from parse import parse_csv  # noqa: E402
 from score import analyze_bom  # noqa: E402
 from ai import ai_configured, extract_bom, generate_narrative  # noqa: E402
