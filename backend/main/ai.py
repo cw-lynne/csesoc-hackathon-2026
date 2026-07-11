@@ -25,9 +25,10 @@ import anthropic
 from materials import DATA
 from score import analyze_bom
 
-# Opus 4.8 for both: strong at grounded writing and at vision/PDF extraction.
-# Swap to "claude-haiku-4-5" (cheaper/faster) if you want to trade quality for cost.
-MODEL = "claude-opus-4-8"
+# Opus 4.8 for both by default: strong at grounded writing and vision/PDF
+# extraction. Override with ANTHROPIC_MODEL in backend/.env — e.g.
+# ANTHROPIC_MODEL=claude-haiku-4-5 for cheaper/faster at some quality cost.
+MODEL = os.environ.get("ANTHROPIC_MODEL") or "claude-opus-4-8"
 
 _client = None
 
@@ -195,7 +196,11 @@ def extract_bom(data, filename):
     msg = client().messages.create(
         model=MODEL,
         max_tokens=4096,
-        system=system,
+        # The system prompt (instructions + material library) is identical on every
+        # upload, so mark it cacheable. Prompt caching only actually kicks in once
+        # the prefix exceeds the model's minimum cacheable size, but it's free to
+        # request and pays off if the library/prompt grows.
+        system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": [
             block,
             {"type": "text", "text": "Extract the bill of materials now as the specified JSON."},

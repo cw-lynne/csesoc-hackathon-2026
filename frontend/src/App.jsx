@@ -100,7 +100,8 @@ function TopNav({ view, setView }) {
 // ---------------------------------------------------------------------------
 // Upload view
 // ---------------------------------------------------------------------------
-function UploadView({ fileName, onFile, onSample, busy, error }) {
+function UploadView({ fileName, onFile, onSample, onLoadSample, busy, busyLabel, error }) {
+  const chip = { background: T.card, color: T.ink3, border: `1px solid ${T.line}`, fontSize: 12.5, fontWeight: 500, padding: '6px 12px', borderRadius: 8, cursor: busy ? 'default' : 'pointer', fontFamily: 'Nunito, sans-serif' }
   return (
     <div style={{ maxWidth: 660, margin: '0 auto', padding: '104px 32px 88px' }}>
       <div className="mono" style={eyebrow}>Sustainable swap engine</div>
@@ -115,7 +116,7 @@ function UploadView({ fileName, onFile, onSample, busy, error }) {
         <div style={{ width: 46, height: 46, margin: '0 auto 16px', borderRadius: 11, border: `1px solid ${T.line}`, background: T.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={22} stroke={T.ink2} sw={1.6} d={['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']} />
         </div>
-        <div style={{ fontSize: 15, fontWeight: 500 }}>{busy ? 'Reading…' : (fileName || 'Drop your BOM file here')}</div>
+        <div style={{ fontSize: 15, fontWeight: 500 }}>{busy ? (busyLabel || 'Reading…') : (fileName || 'Drop your BOM file here')}</div>
         <div style={{ fontSize: 13, color: T.muted, marginTop: 5 }}>CSV parsed instantly · PDF, Excel or a photo read with AI · click to browse</div>
       </label>
 
@@ -123,7 +124,14 @@ function UploadView({ fileName, onFile, onSample, busy, error }) {
         <div style={{ marginTop: 20, background: 'rgba(176,87,110,0.08)', border: '1px solid rgba(176,87,110,0.34)', color: '#8A3F52', fontSize: 13, lineHeight: 1.55, borderRadius: 12, padding: '12px 15px' }}>{error}</div>
       )}
 
-      <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
+      <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 12.5, color: T.muted }}>No file? Try a sample CSV:</span>
+        <button disabled={busy} onClick={() => onLoadSample('good')} style={chip}>Clean</button>
+        <button disabled={busy} onClick={() => onLoadSample('mixed')} style={chip}>Mixed</button>
+        <button disabled={busy} onClick={() => onLoadSample('bad')} style={chip}>Messy</button>
+      </div>
+
+      <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
         <button onClick={onSample} style={btnSolid}>Analyze sample BOM</button>
         <a href="#" onClick={(e) => { e.preventDefault(); downloadCsv(bomTemplateCsv(), 'bom_template.csv') }} style={{ fontSize: 13.5, fontWeight: 500, color: T.ink3, borderBottom: '1px solid #C9C1AE' }}>Download a BOM template</a>
       </div>
@@ -397,10 +405,27 @@ function LineRow({ line, open, onToggle }) {
   )
 }
 
+// Returns `value` delayed by `delay` ms — updates only after it stops changing.
+function useDebounced(value, delay) {
+  const [v, setV] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return v
+}
+
 // AI-written plain-language briefing, grounded on the engine's own numbers
 // (backend /narrative → Claude). Degrades to a quiet note if unavailable.
 function AiSummary({ narrative, onRegenerate }) {
   const sparkle = ['M12 3v4', 'M12 17v4', 'M3 12h4', 'M17 12h4', 'm6.3 6.3 2.8 2.8', 'm14.9 14.9 2.8 2.8', 'm17.7 6.3-2.8 2.8', 'm9.1 14.9-2.8 2.8']
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    if (!narrative.text) return
+    navigator.clipboard?.writeText(narrative.text).then(() => {
+      setCopied(true); setTimeout(() => setCopied(false), 1600)
+    }).catch(() => {})
+  }
   return (
     <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: '18px 20px', marginBottom: 26 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -410,9 +435,16 @@ function AiSummary({ narrative, onRegenerate }) {
           <span className="mono no-print" style={{ fontSize: 9.5, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', border: `1px solid ${T.line}`, borderRadius: 99, padding: '2px 7px' }}>Claude</span>
         </div>
         {!narrative.loading && (
-          <button onClick={onRegenerate} className="no-print" style={{ background: 'transparent', border: 'none', color: T.ink3, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <Icon size={13} sw={2} d={['M3 12a9 9 0 1 0 3-6.7L3 8', 'M3 3v5h5']} /> Regenerate
-          </button>
+          <div className="no-print" style={{ display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+            {narrative.text && (
+              <button onClick={copy} style={{ background: 'transparent', border: 'none', color: copied ? T.good : T.ink3, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <Icon size={13} sw={2} d={copied ? ['M20 6 9 17l-5-5'] : ['M9 9V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4', 'M13 9H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4']} /> {copied ? 'Copied' : 'Copy'}
+              </button>
+            )}
+            <button onClick={onRegenerate} style={{ background: 'transparent', border: 'none', color: T.ink3, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <Icon size={13} sw={2} d={['M3 12a9 9 0 1 0 3-6.7L3 8', 'M3 3v5h5']} /> Regenerate
+            </button>
+          </div>
         )}
       </div>
       {narrative.loading ? (
@@ -434,49 +466,51 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
   const [analysis, setAnalysis] = useState(null)
   const [loading, setLoading] = useState(true)
   const [source, setSource] = useState('local') // 'backend' | 'local'
-  const [expanded, setExpanded] = useState(() => new Set())
+  const [expanded, setExpanded] = useState(() => new Set()) // set of line indices
   const [narrative, setNarrative] = useState({ text: '', loading: true, error: '' })
 
-  // The upload/slider → analyzer seam. Re-runs whenever the BOM or the priority
-  // weight changes; this is the single call site a real POST /analyze-bom
-  // backend slots into (see analysis.js).
+  // The slider updates carbonWeight instantly (for the label) but the expensive
+  // work keys on a debounced copy, so dragging fires one analyze + one summary
+  // once the slider settles rather than on every tick.
+  const debouncedWeight = useDebounced(carbonWeight, 220)
+
+  // The upload/slider → analyzer seam. This is the single call site a real
+  // POST /analyze-bom backend slots into (see analysis.js).
   useEffect(() => {
     let live = true
     setLoading(true)
-    analyzeBom(bomInput, { carbon: carbonWeight }).then((res) => {
+    analyzeBom(bomInput, { carbon: debouncedWeight }).then((res) => {
       if (!live) return
       setAnalysis(res)
       setSource(lastSource)
       setLoading(false)
-      // On the first analysis, auto-open any flagged line so the rejection
-      // reasoning is visible without a click.
-      setExpanded((prev) => (prev.size ? prev : new Set(res.lines.filter((l) => l.status === 'red').map((l) => l.component))))
+      // On the first analysis, auto-open any flagged line (by index, so duplicate
+      // component names don't collide) so the rejection reasoning shows at once.
+      setExpanded((prev) => (prev.size ? prev
+        : new Set(res.lines.map((l, i) => (l.status === 'red' ? i : -1)).filter((i) => i >= 0))))
     })
     return () => { live = false }
-  }, [bomInput, carbonWeight])
+  }, [bomInput, debouncedWeight])
 
-  // Ask the backend (Claude) for a grounded plain-language summary. Runs once for
-  // each newly analyzed BOM; the "Regenerate" control re-runs it for the current
-  // slider position. Degrades quietly if the backend / API key isn't available.
-  const generateSummary = (weight) => {
+  // Grounded plain-language summary (Claude). Re-runs when the BOM changes or the
+  // slider settles; the "Regenerate" control forces a fresh one. Degrades quietly
+  // if the backend / API key isn't available.
+  const runNarrative = (weight, guard) => {
     setNarrative({ text: '', loading: true, error: '' })
-    fetchNarrative(bomInput, { carbon: weight }, meta.productName)
-      .then((res) => setNarrative({ text: (res.narrative || '').trim(), loading: false, error: '' }))
-      .catch((err) => setNarrative({ text: '', loading: false, error: err.message || 'AI summary unavailable.' }))
+    return fetchNarrative(bomInput, { carbon: weight }, meta.productName)
+      .then((res) => { if (!guard || guard()) setNarrative({ text: (res.narrative || '').trim(), loading: false, error: '' }) })
+      .catch((err) => { if (!guard || guard()) setNarrative({ text: '', loading: false, error: err.message || 'AI summary unavailable.' }) })
   }
   useEffect(() => {
     let live = true
-    setNarrative({ text: '', loading: true, error: '' })
-    fetchNarrative(bomInput, { carbon: 0.6 }, meta.productName)
-      .then((res) => { if (live) setNarrative({ text: (res.narrative || '').trim(), loading: false, error: '' }) })
-      .catch((err) => { if (live) setNarrative({ text: '', loading: false, error: err.message || 'AI summary unavailable.' }) })
+    runNarrative(debouncedWeight, () => live)
     return () => { live = false }
-  }, [bomInput])
+  }, [bomInput, debouncedWeight])
 
   const totalKg = bomInput.reduce((s, b) => s + b.kg, 0)
-  const toggle = (name) => setExpanded((prev) => {
+  const toggle = (i) => setExpanded((prev) => {
     const next = new Set(prev)
-    next.has(name) ? next.delete(name) : next.add(name)
+    next.has(i) ? next.delete(i) : next.add(i)
     return next
   })
 
@@ -579,7 +613,7 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
 
           <ScaledImpact co2eSavedPerUnit={summary.co2eSaved} annualVolume={annualVolume} setAnnualVolume={setAnnualVolume} />
 
-          <AiSummary narrative={narrative} onRegenerate={() => generateSummary(carbonWeight)} />
+          <AiSummary narrative={narrative} onRegenerate={() => runNarrative(carbonWeight)} />
 
           {/* Per-component results table (expand a row for radar + reasoning) */}
           <div style={{ fontSize: 15, fontWeight: 600, margin: '30px 0 12px' }}>
@@ -599,8 +633,8 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {analysis.lines.map((line) => (
-                    <LineRow key={line.component} line={line} open={expanded.has(line.component)} onToggle={() => toggle(line.component)} />
+                  {analysis.lines.map((line, i) => (
+                    <LineRow key={i} line={line} open={expanded.has(i)} onToggle={() => toggle(i)} />
                   ))}
                 </tbody>
               </table>
@@ -863,6 +897,7 @@ export default function App() {
   const [view, setView] = useState('upload') // upload | results | library
   const [fileName, setFileName] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [busyLabel, setBusyLabel] = useState('Reading…')
   const [uploadError, setUploadError] = useState(null)
   const [bom, setBom] = useState(BOM)          // rows currently shown in results
   const [meta, setMeta] = useState(SAMPLE_META)
@@ -891,7 +926,7 @@ export default function App() {
   }
 
   const analyzeFile = async (file) => {
-    setFileName(file.name); setUploadError(null); setBusy(true)
+    setFileName(file.name); setUploadError(null); setBusyLabel('Reading…'); setBusy(true)
     const ext = (file.name.split('.').pop() || '').toLowerCase()
     try {
       let result
@@ -905,12 +940,14 @@ export default function App() {
         const weak = !!result.error || rowCount === 0 || (result.warnings?.length || 0) >= rowCount
         if (weak) {
           try {
+            setBusyLabel('Reading with AI…')
             const ai = await extractBom(file)
             if (ai.rows && ai.rows.length) result = ai
           } catch { /* keep the client-side result */ }
         }
       } else {
         // PDF, Excel, images — always read with AI.
+        setBusyLabel('Reading with AI…')
         result = await extractBom(file)
       }
       const { rows, warnings: warn, meta: m, error } = result
@@ -927,11 +964,26 @@ export default function App() {
     }
   }
 
+  // Load a bundled sample CSV (public/samples) and run it through the normal
+  // upload path — a quick way to try the analyzer (and the AI-CSV fallback).
+  const loadSample = async (name) => {
+    setUploadError(null); setBusyLabel('Loading sample…'); setBusy(true)
+    try {
+      const res = await fetch(`/samples/sample_bom_${name}.csv`)
+      if (!res.ok) throw new Error('Could not load the sample file.')
+      const blob = await res.blob()
+      await analyzeFile(new File([blob], `sample_bom_${name}.csv`, { type: 'text/csv' }))
+    } catch (err) {
+      setUploadError(err.message || 'Could not load the sample file.')
+      setBusy(false)
+    }
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: T.page, color: T.ink }}>
       <TopNav view={view} setView={setView} />
 
-      {view === 'upload' && <UploadView fileName={fileName} onFile={analyzeFile} onSample={analyzeSample} busy={busy} error={uploadError} />}
+      {view === 'upload' && <UploadView fileName={fileName} onFile={analyzeFile} onSample={analyzeSample} onLoadSample={loadSample} busy={busy} busyLabel={busyLabel} error={uploadError} />}
       {view === 'results' && <ResultsView setView={setView} bom={bom} meta={meta} warnings={warnings} />}
       {view === 'library' && (
         <LibraryView
