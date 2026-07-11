@@ -1,8 +1,16 @@
 """Compares parsed BOM rows (from parse.parse_csv) against the reference CSVs
-in backend/data (component_library.csv, material_library.csv)."""
+in backend/data (component_library.csv, material_library.csv), and can send
+that comparison to an OpenAI agent for a sustainability assessment."""
 
 import csv
+import json
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -50,3 +58,36 @@ def compare_with_library(parsed_rows: list[dict]) -> list[dict]:
             "material_known": material_match is not None,
         })
     return results
+
+
+def _build_analysis_prompt(comparison: list[dict]) -> str:
+    return (
+        "You are a sustainability analyst reviewing a bill of materials (BOM).\n"
+        "Each row lists a component, its material, and whether that component/material "
+        "is recognised in our reference library (component_known / material_known).\n\n"
+        f"{json.dumps(comparison, indent=2)}\n\n"
+        "Based on this data, respond with a JSON object containing:\n"
+        '  "sustainability_score": 0-100,\n'
+        '  "recyclability_score": 0-100,\n'
+        '  "longevity_score": 0-100,\n'
+        '  "summary": a short overall conclusion,\n'
+        '  "alternative_materials": a list of objects with "component", '
+        '"current_material", "suggested_material", and "reason", only where a '
+        "lower-impact swap applies.\n"
+        "Respond with JSON only, no other text."
+    )
+
+
+def analyze_with_ai(parsed_rows: list[dict], model: str = "gpt-4o-mini") -> dict:
+    """Compare parsed BOM rows against the reference library, then ask an OpenAI
+    agent to conclude sustainability, recyclability, and longevity scores plus
+    alternative material suggestions."""
+    comparison = compare_with_library(parsed_rows)
+
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": _build_analysis_prompt(comparison)}],
+        response_format={"type": "json_object"},
+    )
+    return json.loads(response.choices[0].message.content)
