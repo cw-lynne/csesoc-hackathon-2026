@@ -4,6 +4,7 @@ import {
   mat, co2eColor, recycColor, fmtCost, datasetCsv,
 } from './materials.js'
 import { parseBomFile, bomTemplateCsv } from './bomParser.js'
+import Reveal from './Reveal.jsx'
 import { analyzeBom, lastSource } from './analysis.js'
 import { extractBom, fetchNarrative, fetchIncentives } from './api.js'
 
@@ -128,33 +129,35 @@ function UploadView({ fileName, onFile, onSample, onLoadSample, busy, busyLabel,
       <p style={{ fontSize: 17, color: T.ink3, lineHeight: 1.6, margin: '0 0 24px', maxWidth: 540 }}>Drop in a bill of materials. ecocompass finds lower-carbon material swaps — and refuses the ones it can't justify, telling you why — then scores how repairable and long-lived the design is, with concrete fixes to raise it.</p>
       <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6, margin: '0 0 34px', maxWidth: 540 }}>Every figure is a transparent, sourced estimate — each material links to its primary source and the reason behind a rejected swap, so you can check our working, not just trust a number.</p>
 
-      <label style={{ display: 'block', background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: '44px 30px', cursor: busy ? 'default' : 'pointer', textAlign: 'center', transition: 'border-color .18s, background .18s' }}
-        onMouseOver={(e) => { if (busy) return; e.currentTarget.style.borderColor = '#C9C1AE'; e.currentTarget.style.background = '#FEFDFB' }}
-        onMouseOut={(e) => { e.currentTarget.style.borderColor = T.line; e.currentTarget.style.background = T.card }}>
-        <input type="file" accept=".csv,.xlsx,.pdf,.png,.jpg,.jpeg,.webp,.gif" disabled={busy} style={{ display: 'none' }}
-          onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) onFile(f); e.target.value = '' }} />
-        <div style={{ width: 46, height: 46, margin: '0 auto 16px', borderRadius: 11, border: `1px solid ${T.line}`, background: T.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={22} stroke={T.ink2} sw={1.6} d={['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']} />
-        </div>
-        <div style={{ fontSize: 15, fontWeight: 500 }}>{busy ? (busyLabel || 'Reading…') : (fileName || 'Drop your BOM file here')}</div>
-        <div style={{ fontSize: 13, color: T.muted, marginTop: 5 }}>CSV parsed instantly · PDF, Excel or a photo read with AI · click to browse</div>
-      </label>
+      <Reveal index={0}>
+        <label style={{ display: 'block', background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: '44px 30px', cursor: busy ? 'default' : 'pointer', textAlign: 'center', transition: 'border-color .18s, background .18s' }}
+          onMouseOver={(e) => { if (busy) return; e.currentTarget.style.borderColor = '#C9C1AE'; e.currentTarget.style.background = '#FEFDFB' }}
+          onMouseOut={(e) => { e.currentTarget.style.borderColor = T.line; e.currentTarget.style.background = T.card }}>
+          <input type="file" accept=".csv,.xlsx,.pdf,.png,.jpg,.jpeg,.webp,.gif" disabled={busy} style={{ display: 'none' }}
+            onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) onFile(f); e.target.value = '' }} />
+          <div style={{ width: 46, height: 46, margin: '0 auto 16px', borderRadius: 11, border: `1px solid ${T.line}`, background: T.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={22} stroke={T.ink2} sw={1.6} d={['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']} />
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 500 }}>{busy ? (busyLabel || 'Reading…') : (fileName || 'Drop your BOM file here')}</div>
+          <div style={{ fontSize: 13, color: T.muted, marginTop: 5 }}>CSV parsed instantly · PDF, Excel or a photo read with AI · click to browse</div>
+        </label>
+      </Reveal>
 
       {error && (
         <div style={{ marginTop: 20, background: 'rgba(176,87,110,0.08)', border: '1px solid rgba(176,87,110,0.34)', color: '#8A3F52', fontSize: 13, lineHeight: 1.55, borderRadius: 12, padding: '12px 15px' }}>{error}</div>
       )}
 
-      <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
+      <Reveal index={1} style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12.5, color: T.muted }}>No file? Try a sample CSV:</span>
         <button disabled={busy} onClick={() => onLoadSample('good')} style={chip}>Clean</button>
         <button disabled={busy} onClick={() => onLoadSample('mixed')} style={chip}>Mixed</button>
         <button disabled={busy} onClick={() => onLoadSample('bad')} style={chip}>Messy</button>
-      </div>
+      </Reveal>
 
-      <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
+      <Reveal index={2} style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 22, flexWrap: 'wrap' }}>
         <button onClick={onSample} style={btnSolid}>Analyze sample BOM</button>
         <a href="#" onClick={(e) => { e.preventDefault(); downloadCsv(bomTemplateCsv(), 'bom_template.csv') }} style={{ fontSize: 13.5, fontWeight: 500, color: T.ink3, borderBottom: '1px solid #C9C1AE' }}>Download a BOM template</a>
-      </div>
+      </Reveal>
     </div>
   )
 }
@@ -587,21 +590,23 @@ const scoreColor = (v) => (v >= 75 ? T.good : v >= 50 ? T.warn : T.bad)
 function ScoreBanner({ summary }) {
   const rep = summary.repairability
   const overall = summary.overall
-  const Tile = ({ label, score, grade, sub, big }) => (
-    <div style={{ flex: big ? 1.25 : 1, minWidth: 150, background: big ? T.accent : T.card, color: big ? T.page : T.ink, border: `1px solid ${big ? T.accent : T.line}`, borderRadius: 14, padding: '16px 18px' }}>
-      <div className="mono" style={{ fontSize: 10, color: big ? 'rgba(244,241,234,0.72)' : T.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
-        <span style={{ fontSize: big ? 36 : 27, fontWeight: 700, letterSpacing: '-0.03em', color: big ? T.page : scoreColor(score) }}>{score}</span>
-        <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: big ? 'rgba(244,241,234,0.9)' : T.muted }}>{grade}</span>
+  const Tile = ({ label, score, grade, sub, big, index = 0 }) => (
+    <Reveal index={index} style={{ display: 'flex', flex: big ? 1.25 : 1, minWidth: 150 }}>
+      <div style={{ width: '100%', background: big ? T.accent : T.card, color: big ? T.page : T.ink, border: `1px solid ${big ? T.accent : T.line}`, borderRadius: 14, padding: '16px 18px' }}>
+        <div className="mono" style={{ fontSize: 10, color: big ? 'rgba(244,241,234,0.72)' : T.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
+          <span style={{ fontSize: big ? 36 : 27, fontWeight: 700, letterSpacing: '-0.03em', color: big ? T.page : scoreColor(score) }}>{score}</span>
+          <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: big ? 'rgba(244,241,234,0.9)' : T.muted }}>{grade}</span>
+        </div>
+        {sub && <div style={{ fontSize: 11.5, color: big ? 'rgba(244,241,234,0.8)' : T.muted, marginTop: 5, lineHeight: 1.4 }}>{sub}</div>}
       </div>
-      {sub && <div style={{ fontSize: 11.5, color: big ? 'rgba(244,241,234,0.8)' : T.muted, marginTop: 5, lineHeight: 1.4 }}>{sub}</div>}
-    </div>
+    </Reveal>
   )
   return (
     <div style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
-      {overall && <Tile big label="Overall eco score" score={overall.score} grade={overall.grade} sub="carbon impact + design longevity, blended" />}
-      <Tile label="Carbon impact" score={summary.ecoScore} grade={summary.ecoGrade} sub={`${summary.co2ePct}% embodied CO₂e cut vs baseline`} />
-      {rep && <Tile label="Repairability" score={rep.score} grade={rep.grade} sub={rep.label} />}
+      {overall && <Tile big index={0} label="Overall eco score" score={overall.score} grade={overall.grade} sub="carbon impact + design longevity, blended" />}
+      <Tile index={overall ? 1 : 0} label="Carbon impact" score={summary.ecoScore} grade={summary.ecoGrade} sub={`${summary.co2ePct}% embodied CO₂e cut vs baseline`} />
+      {rep && <Tile index={overall ? 2 : 1} label="Repairability" score={rep.score} grade={rep.grade} sub={rep.label} />}
     </div>
   )
 }
@@ -1172,10 +1177,10 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 18 }}>
-            <StatCard label="CO₂e saved / unit" value={`${summary.co2eSaved.toFixed(1)} kg`} sub={`−${summary.co2ePct}% vs baseline spec`} color={T.accent} />
-            <StatCard label="Cost delta / unit" value={signedMoney(summary.costDelta)} sub={summary.costUp ? 'added material cost' : 'net material saving'} color={summary.costUp ? T.warn : T.good} />
-            <StatCard label="Viable swaps" value={`${summary.viableCount}`} sub={`of ${bomInput.length} components`} color={T.good} />
-            <StatCard label="Flagged" value={`${summary.flaggedCount}`} sub={summary.flaggedCount ? 'no viable swap — review' : 'none — all resolved'} color={summary.flaggedCount ? T.bad : T.ink3} />
+            <Reveal index={0}><StatCard label="CO₂e saved / unit" value={`${summary.co2eSaved.toFixed(1)} kg`} sub={`−${summary.co2ePct}% vs baseline spec`} color={T.accent} /></Reveal>
+            <Reveal index={1}><StatCard label="Cost delta / unit" value={signedMoney(summary.costDelta)} sub={summary.costUp ? 'added material cost' : 'net material saving'} color={summary.costUp ? T.warn : T.good} /></Reveal>
+            <Reveal index={2}><StatCard label="Viable swaps" value={`${summary.viableCount}`} sub={`of ${bomInput.length} components`} color={T.good} /></Reveal>
+            <Reveal index={3}><StatCard label="Flagged" value={`${summary.flaggedCount}`} sub={summary.flaggedCount ? 'no viable swap — review' : 'none — all resolved'} color={summary.flaggedCount ? T.bad : T.ink3} /></Reveal>
           </div>
 
           <ScaledImpact co2eSavedPerUnit={summary.co2eSaved} annualVolume={annualVolume} setAnnualVolume={setAnnualVolume} />
@@ -1288,7 +1293,7 @@ function LibraryView({ query, setQuery, category, setCategory, sortKey, sortDir,
         </div>
       </div>
 
-      <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, overflow: 'hidden' }}>
+      <Reveal style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, overflow: 'hidden' }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, minWidth: 760 }}>
             <thead>
@@ -1337,7 +1342,7 @@ function LibraryView({ query, setQuery, category, setCategory, sortKey, sortDir,
             </tbody>
           </table>
         </div>
-      </div>
+      </Reveal>
     </div>
   )
 }

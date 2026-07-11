@@ -90,7 +90,7 @@ export default function ScanView() {
       )}
 
       {scan && (
-        <div className="eco-fade-up">
+        <div>
           <ScanResultCard scan={scan} />
 
           {scan.needs_contribution && (

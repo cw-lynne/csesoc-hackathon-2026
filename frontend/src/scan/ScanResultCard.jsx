@@ -6,6 +6,7 @@
 // alternative, and the call-out-brand action.
 import React from 'react'
 import { T, Icon, ICONS, bandStyle } from './tokens.jsx'
+import Reveal from '../Reveal.jsx'
 import CallOutBrand from './CallOutBrand.jsx'
 
 // Provenance badge — the trust requirement. Verified = solid green + check;
@@ -129,35 +130,39 @@ export default function ScanResultCard({ scan }) {
       </h2>
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-        <GradeTile
-          title="Repairability"
-          score={r.score}
-          band={r.band}
-          provenanceKind={r.source === 'verified_fr_index' ? 'verified' : 'none'}
-          caption={r.provenance || 'No verified repairability data yet.'}
-        />
-        <GradeTile
-          title="Carbon"
-          score={c?.score}
-          band={c?.band}
-          provenanceKind={c ? 'estimated' : 'none'}
-          confidence={c?.confidence}
-          caption={c ? (c.provenance + (c.rationale ? ` — ${c.rationale}` : '')) : 'No carbon estimate available.'}
-        />
+        <Reveal index={0} style={{ display: 'flex', flex: 1, minWidth: 200 }}>
+          <GradeTile
+            title="Repairability"
+            score={r.score}
+            band={r.band}
+            provenanceKind={r.source === 'verified_fr_index' ? 'verified' : 'none'}
+            caption={r.provenance || 'No verified repairability data yet.'}
+          />
+        </Reveal>
+        <Reveal index={1} style={{ display: 'flex', flex: 1, minWidth: 200 }}>
+          <GradeTile
+            title="Carbon"
+            score={c?.score}
+            band={c?.band}
+            provenanceKind={c ? 'estimated' : 'none'}
+            confidence={c?.confidence}
+            caption={c ? (c.provenance + (c.rationale ? ` — ${c.rationale}` : '')) : 'No carbon estimate available.'}
+          />
+        </Reveal>
       </div>
 
       {/* Grounded plain-language verdict. */}
       {scan.narrative && (
-        <div style={{ marginTop: 16, background: T.cardAlt, border: `1px solid ${T.line2}`, borderRadius: 14, padding: '15px 17px', fontSize: 13.5, color: T.ink2, lineHeight: 1.6 }}>
+        <Reveal index={2} style={{ marginTop: 16, background: T.cardAlt, border: `1px solid ${T.line2}`, borderRadius: 14, padding: '15px 17px', fontSize: 13.5, color: T.ink2, lineHeight: 1.6 }}>
           {scan.narrative}
-        </div>
+        </Reveal>
       )}
 
-      <CriteriaBars criteria={r.criteria} />
+      <Reveal index={3}><CriteriaBars criteria={r.criteria} /></Reveal>
 
       {/* One better-scoring alternative. */}
       {alt && (
-        <div className="eco-card eco-lift" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(47,107,67,0.06)', border: '1px solid rgba(47,107,67,0.22)', borderRadius: 14, padding: '14px 16px' }}>
+        <Reveal index={4} className="eco-card eco-lift" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(47,107,67,0.06)', border: '1px solid rgba(47,107,67,0.22)', borderRadius: 14, padding: '14px 16px' }}>
           <div style={{ width: 46, height: 46, flexShrink: 0, borderRadius: '50%', border: `4px solid ${bandStyle(alt.band).ring}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: bandStyle(alt.band).fg }}>
             {alt.score}
           </div>
@@ -166,13 +171,13 @@ export default function ScanResultCard({ scan }) {
             <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{alt.productName}</div>
             <div style={{ fontSize: 12, color: T.ink3 }}>{alt.brand ? alt.brand + ' · ' : ''}scores {alt.score}/100 for repairability ({bandStyle(alt.band).label.toLowerCase()})</div>
           </div>
-        </div>
+        </Reveal>
       )}
 
       {/* Call out the brand. */}
-      <div style={{ marginTop: 18 }}>
+      <Reveal index={5} style={{ marginTop: 18 }}>
         <CallOutBrand scan={scan} />
-      </div>
+      </Reveal>
     </div>
   )
 }
