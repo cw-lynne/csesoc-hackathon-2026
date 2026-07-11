@@ -110,9 +110,12 @@ export function recommendSwap(fromName) {
   const stem = f.name.replace(/^recycled_/, '').split('_')[0].toLowerCase()
 
   // Only swap to something both lower-carbon AND strong enough to stand in for
-  // the original — never recommend a structurally inadequate downgrade.
+  // the original — never recommend a structurally inadequate downgrade, and
+  // never one whose carbon/cost isn't sourced (guards Materiom-style entries
+  // with unsourced metrics from silently driving a recommendation).
   const pool = DATA.filter(
-    (d) => d.name !== f.name && d.co2e_per_kg < f.co2e_per_kg && d.tensile_strength_mpa >= minStrength,
+    (d) => d.name !== f.name && d.co2e_per_kg != null && d.cost_per_kg != null &&
+      d.co2e_per_kg < f.co2e_per_kg && d.tensile_strength_mpa >= minStrength,
   )
   if (!pool.length) return f.name
 
