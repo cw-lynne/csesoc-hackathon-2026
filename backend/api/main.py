@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+import anthropic
 from fastapi import Body, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,6 +10,15 @@ from fastapi.middleware.cors import CORSMiddleware
 sys.path.append(str(Path(__file__).resolve().parent.parent / "main"))
 from parse import parse_csv  # noqa: E402
 from score import analyze_bom  # noqa: E402
+from ai import ai_configured, extract_bom, generate_narrative  # noqa: E402
+
+
+def _ai_unavailable(exc):
+    """Map an SDK/runtime failure to a clean 503 so AI outages never 500 the app."""
+    msg = str(exc).lower()
+    if isinstance(exc, anthropic.AuthenticationError) or "authentication" in msg or "api_key" in msg:
+        return HTTPException(status_code=503, detail="AI features need ANTHROPIC_API_KEY set on the backend.")
+    return HTTPException(status_code=503, detail=f"AI unavailable: {exc}")
 
 app = FastAPI(title="ecocompass API")
 
@@ -25,7 +35,48 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     """Health check + endpoint index."""
-    return {"service": "ecocompass", "status": "ok", "endpoints": ["/upload-csv", "/analyze-bom"]}
+    return {
+        "service": "ecocompass",
+        "status": "ok",
+        "ai": ai_configured(),
+        "endpoints": ["/upload-csv", "/analyze-bom", "/narrative", "/extract-bom"],
+    }
+
+
+@app.post("/narrative")
+def narrative_endpoint(payload: dict = Body(...)):
+    """Generate a grounded, human-readable summary of a swap analysis (Claude).
+
+    Body: { "bom": [...], "weights": {...}, "productName"? }
+    Returns { "narrative": string }.
+    """
+    bom = payload.get("bom")
+    if not isinstance(bom, list) or not bom:
+        raise HTTPException(status_code=400, detail="Request must include a non-empty 'bom' array.")
+    weights = payload.get("weights") or {"carbon": 0.6}
+    product = payload.get("productName") or "This build"
+    try:
+        return {"narrative": generate_narrative(bom, weights, product)}
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001 — never 500; surface as a 503 the UI can show
+        raise _ai_unavailable(exc)
+
+
+@app.post("/extract-bom")
+async def extract_bom_endpoint(file: UploadFile):
+    """Read a bill of materials from a photo / PDF / Excel / CSV using Claude.
+
+    Returns { "rows": [{component, from, kg}], "warnings": [...], "meta": {...} } —
+    ready to feed straight into /analyze-bom.
+    """
+    data = await file.read()
+    try:
+        return extract_bom(data, file.filename or "upload")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise _ai_unavailable(exc)
 
 
 @app.post("/analyze-bom")

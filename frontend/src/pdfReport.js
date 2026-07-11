@@ -343,12 +343,23 @@ function disclaimer(r) {
 
 function money(v) { return '$' + Number(v).toFixed(2) }
 
+// Optional AI-written briefing, printed under the header when present.
+function narrativeBlock(r, text) {
+  r.need(40)
+  r.font('bold', 10.5).set(C.ink)
+  r.doc.text('AI summary', M, r.y + 10)
+  r.y += 20
+  r.paragraph(text, { size: 9.5, color: C.ink2, lh: 1.55 })
+  r.y += 10
+}
+
 // --- public entry point ----------------------------------------------------
 
 // `data` is the fully-derived report payload assembled by ResultsView.
 export function generateEcoReport(data) {
   const r = new Report()
   header(r, data)
+  if (data.narrative) narrativeBlock(r, data.narrative)
   ecoScoreBlock(r, data)
   totalsBlock(r, data)
   swapsSection(r, data)

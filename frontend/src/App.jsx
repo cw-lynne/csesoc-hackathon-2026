@@ -10,6 +10,7 @@ import {
 import { parseBomFile, bomTemplateCsv } from './bomParser.js'
 import { generateEcoReport } from './pdfReport.js'
 import { analyzeBom, lastSource } from './analysis.js'
+import { extractBom, fetchNarrative } from './api.js'
 
 // --- ecocompass palette (mirrors the CSS vars in theme.css) ----------------
 const T = {
@@ -109,13 +110,13 @@ function UploadView({ fileName, onFile, onSample, busy, error }) {
       <label style={{ display: 'block', background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: '44px 30px', cursor: busy ? 'default' : 'pointer', textAlign: 'center', transition: 'border-color .18s, background .18s' }}
         onMouseOver={(e) => { if (busy) return; e.currentTarget.style.borderColor = '#C9C1AE'; e.currentTarget.style.background = '#FEFDFB' }}
         onMouseOut={(e) => { e.currentTarget.style.borderColor = T.line; e.currentTarget.style.background = T.card }}>
-        <input type="file" accept=".csv,.xlsx,.xls" disabled={busy} style={{ display: 'none' }}
+        <input type="file" accept=".csv,.xlsx,.pdf,.png,.jpg,.jpeg,.webp,.gif" disabled={busy} style={{ display: 'none' }}
           onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) onFile(f); e.target.value = '' }} />
         <div style={{ width: 46, height: 46, margin: '0 auto 16px', borderRadius: 11, border: `1px solid ${T.line}`, background: T.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={22} stroke={T.ink2} sw={1.6} d={['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']} />
         </div>
         <div style={{ fontSize: 15, fontWeight: 500 }}>{busy ? 'Reading…' : (fileName || 'Drop your BOM file here')}</div>
-        <div style={{ fontSize: 13, color: T.muted, marginTop: 5 }}>CSV · component, material, kg · click to browse</div>
+        <div style={{ fontSize: 13, color: T.muted, marginTop: 5 }}>CSV parsed instantly · PDF, Excel or a photo read with AI · click to browse</div>
       </label>
 
       {error && (
@@ -396,6 +397,37 @@ function LineRow({ line, open, onToggle }) {
   )
 }
 
+// AI-written plain-language briefing, grounded on the engine's own numbers
+// (backend /narrative → Claude). Degrades to a quiet note if unavailable.
+function AiSummary({ narrative, onRegenerate }) {
+  const sparkle = ['M12 3v4', 'M12 17v4', 'M3 12h4', 'M17 12h4', 'm6.3 6.3 2.8 2.8', 'm14.9 14.9 2.8 2.8', 'm17.7 6.3-2.8 2.8', 'm9.1 14.9-2.8 2.8']
+  return (
+    <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: '18px 20px', marginBottom: 26 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon size={15} stroke={T.accent} sw={1.9} d={sparkle} />
+          <span style={{ fontSize: 13.5, fontWeight: 600 }}>AI summary</span>
+          <span className="mono no-print" style={{ fontSize: 9.5, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', border: `1px solid ${T.line}`, borderRadius: 99, padding: '2px 7px' }}>Claude</span>
+        </div>
+        {!narrative.loading && (
+          <button onClick={onRegenerate} className="no-print" style={{ background: 'transparent', border: 'none', color: T.ink3, fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <Icon size={13} sw={2} d={['M3 12a9 9 0 1 0 3-6.7L3 8', 'M3 3v5h5']} /> Regenerate
+          </button>
+        )}
+      </div>
+      {narrative.loading ? (
+        <div style={{ fontSize: 13, color: T.muted }}>Writing a grounded summary…</div>
+      ) : narrative.error ? (
+        <div style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.55 }}>
+          AI summary unavailable — <span style={{ color: T.ink3 }}>{narrative.error}</span> The analysis above is unaffected.
+        </div>
+      ) : (
+        <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.65 }}>{narrative.text}</div>
+      )}
+    </div>
+  )
+}
+
 function ResultsView({ setView, bom: bomInput, meta, warnings }) {
   const [carbonWeight, setCarbonWeight] = useState(0.6)
   const [annualVolume, setAnnualVolume] = useState(10000)
@@ -403,6 +435,7 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
   const [loading, setLoading] = useState(true)
   const [source, setSource] = useState('local') // 'backend' | 'local'
   const [expanded, setExpanded] = useState(() => new Set())
+  const [narrative, setNarrative] = useState({ text: '', loading: true, error: '' })
 
   // The upload/slider → analyzer seam. Re-runs whenever the BOM or the priority
   // weight changes; this is the single call site a real POST /analyze-bom
@@ -421,6 +454,24 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
     })
     return () => { live = false }
   }, [bomInput, carbonWeight])
+
+  // Ask the backend (Claude) for a grounded plain-language summary. Runs once for
+  // each newly analyzed BOM; the "Regenerate" control re-runs it for the current
+  // slider position. Degrades quietly if the backend / API key isn't available.
+  const generateSummary = (weight) => {
+    setNarrative({ text: '', loading: true, error: '' })
+    fetchNarrative(bomInput, { carbon: weight }, meta.productName)
+      .then((res) => setNarrative({ text: (res.narrative || '').trim(), loading: false, error: '' }))
+      .catch((err) => setNarrative({ text: '', loading: false, error: err.message || 'AI summary unavailable.' }))
+  }
+  useEffect(() => {
+    let live = true
+    setNarrative({ text: '', loading: true, error: '' })
+    fetchNarrative(bomInput, { carbon: 0.6 }, meta.productName)
+      .then((res) => { if (live) setNarrative({ text: (res.narrative || '').trim(), loading: false, error: '' }) })
+      .catch((err) => { if (live) setNarrative({ text: '', loading: false, error: err.message || 'AI summary unavailable.' }) })
+    return () => { live = false }
+  }, [bomInput])
 
   const totalKg = bomInput.reduce((s, b) => s + b.kg, 0)
   const toggle = (name) => setExpanded((prev) => {
@@ -446,6 +497,7 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
       componentCount: bomInput.length,
       totalKg,
       dateStr: new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }),
+      narrative: narrative.text || '',
       ecoScore: summary.ecoScore, ecoGrade: summary.ecoGrade, headline,
       co2ePct: summary.co2ePct, costDelta: signedMoney(summary.costDelta), costUp: summary.costUp, recycPts: summary.recycPts,
       costFrom: summary.costFrom, costTo: summary.costTo,
@@ -526,6 +578,8 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
           </div>
 
           <ScaledImpact co2eSavedPerUnit={summary.co2eSaved} annualVolume={annualVolume} setAnnualVolume={setAnnualVolume} />
+
+          <AiSummary narrative={narrative} onRegenerate={() => generateSummary(carbonWeight)} />
 
           {/* Per-component results table (expand a row for radar + reasoning) */}
           <div style={{ fontSize: 15, fontWeight: 600, margin: '30px 0 12px' }}>
@@ -838,14 +892,24 @@ export default function App() {
 
   const analyzeFile = async (file) => {
     setFileName(file.name); setUploadError(null); setBusy(true)
-    const { rows, warnings: warn, meta: m, error } = await parseBomFile(file)
-    setBusy(false)
-    if (error) { setUploadError(error); return }
-    if (!rows.length) {
-      setUploadError((warn && warn[0]) || 'No usable rows found in the file.')
-      return
+    const ext = (file.name.split('.').pop() || '').toLowerCase()
+    try {
+      // CSV is parsed instantly client-side; everything else (PDF, Excel, images)
+      // is read by the AI extractor on the backend.
+      const { rows, warnings: warn, meta: m, error } = ext === 'csv'
+        ? await parseBomFile(file)
+        : await extractBom(file)
+      if (error) { setUploadError(error); return }
+      if (!rows || !rows.length) {
+        setUploadError((warn && warn[0]) || 'No usable rows found in the file.')
+        return
+      }
+      setBom(rows); setMeta(m); setWarnings(warn || []); setView('results')
+    } catch (err) {
+      setUploadError(err.message || 'Could not read the file.')
+    } finally {
+      setBusy(false)
     }
-    setBom(rows); setMeta(m); setWarnings(warn || []); setView('results')
   }
 
   return (
