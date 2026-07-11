@@ -9,7 +9,7 @@ import {
 } from './materials.js'
 import { parseBomFile, bomTemplateCsv } from './bomParser.js'
 import { generateEcoReport } from './pdfReport.js'
-import { analyzeBom } from './analysis.js'
+import { analyzeBom, lastSource } from './analysis.js'
 
 // --- ecocompass palette (mirrors the CSS vars in theme.css) ----------------
 const T = {
@@ -401,6 +401,7 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
   const [annualVolume, setAnnualVolume] = useState(10000)
   const [analysis, setAnalysis] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [source, setSource] = useState('local') // 'backend' | 'local'
   const [expanded, setExpanded] = useState(() => new Set())
 
   // The upload/slider → analyzer seam. Re-runs whenever the BOM or the priority
@@ -412,6 +413,7 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
     analyzeBom(bomInput, { carbon: carbonWeight }).then((res) => {
       if (!live) return
       setAnalysis(res)
+      setSource(lastSource)
       setLoading(false)
       // On the first analysis, auto-open any flagged line so the rejection
       // reasoning is visible without a click.
@@ -502,7 +504,14 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
         <>
           {/* Summary dashboard */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, margin: '4px 0 14px', flexWrap: 'wrap' }}>
-            <div style={{ fontSize: 15, fontWeight: 600 }}>Analysis summary</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>Analysis summary</div>
+              <span className="no-print mono" title={source === 'backend' ? 'Scored by the FastAPI backend (/analyze-bom)' : 'Backend unreachable — scored by the built-in engine'}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: source === 'backend' ? T.good : T.muted, background: source === 'backend' ? 'rgba(91,122,78,0.12)' : T.cardAlt, border: `1px solid ${source === 'backend' ? 'rgba(91,122,78,0.34)' : T.line}`, borderRadius: 99, padding: '3px 9px' }}>
+                <span style={{ width: 5, height: 5, borderRadius: 99, background: source === 'backend' ? T.good : T.faint }} />
+                {source === 'backend' ? 'via API' : 'offline engine'}
+              </span>
+            </div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.card, border: `1px solid ${T.line}`, borderRadius: 99, padding: '5px 13px' }}>
               <span className="mono" style={{ fontSize: 10.5, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Eco score</span>
               <span style={{ fontSize: 15, fontWeight: 700, color: summary.ecoScore >= 75 ? T.good : summary.ecoScore >= 50 ? T.warn : T.bad }}>{summary.ecoScore}</span>

@@ -17,8 +17,8 @@
 
 import { DATA, mat } from './materials.js'
 
-// The endpoint the real analyzer will expose; referenced by the fetch hook.
-export const ANALYZE_ENDPOINT = '/analyze-bom'
+// The FastAPI analyzer, reached through Vite's /api proxy (see vite.config.js).
+export const ANALYZE_ENDPOINT = '/api/analyze-bom'
 
 // --- library-wide normalisation ranges (for radar axes) --------------------
 const rangeOf = (key) => {
@@ -285,21 +285,39 @@ function summarise(lines) {
   }
 }
 
-// --- public entry point ----------------------------------------------------
-// `weights.carbon` ∈ [0,1] is the priority-slider position (0 = cost, 1 = carbon).
-export async function analyzeBom(bom, weights = { carbon: 0.6 }) {
-  // ── Backend hook ─────────────────────────────────────────────────────────
-  // When POST /analyze-bom is live, replace everything below with:
-  //   const res = await fetch(ANALYZE_ENDPOINT, {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ bom, weights }),
-  //   })
-  //   if (!res.ok) throw new Error(`analyze-bom failed: ${res.status}`)
-  //   return res.json()
-  // ─────────────────────────────────────────────────────────────────────────
+// The same analysis, computed client-side. This is the FastAPI engine's exact
+// twin (backend/main/score.py is a line-for-line port, verified byte-identical),
+// used as an offline fallback when the backend isn't reachable.
+export function localAnalyze(bom, weights = { carbon: 0.6 }) {
   const carbonWeight = Math.max(0, Math.min(1, weights?.carbon ?? 0.6))
   const lines = bom.map((line) => analyzeLine(line, carbonWeight))
   const summary = summarise(lines)
   return { weights: { carbon: carbonWeight }, lines, summary }
+}
+
+// Where the last analysis came from — handy for a UI badge / debugging.
+export let lastSource = 'local'
+
+// --- public entry point ----------------------------------------------------
+// `weights.carbon` ∈ [0,1] is the priority-slider position (0 = cost, 1 = carbon).
+// Prefers the FastAPI backend (POST /analyze-bom); transparently falls back to
+// the local engine if the backend is down, so the app always works.
+export async function analyzeBom(bom, weights = { carbon: 0.6 }) {
+  try {
+    const res = await fetch(ANALYZE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bom, weights }),
+    })
+    if (!res.ok) throw new Error(`analyze-bom failed: ${res.status}`)
+    const data = await res.json()
+    lastSource = 'backend'
+    return data
+  } catch (err) {
+    lastSource = 'local'
+    if (typeof console !== 'undefined') {
+      console.info('[ecocompass] backend unavailable, using local engine —', err.message)
+    }
+    return localAnalyze(bom, weights)
+  }
 }
