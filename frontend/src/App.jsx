@@ -10,6 +10,11 @@ import {
 import { parseBomFile, bomTemplateCsv } from './bomParser.js'
 import { generateEcoReport } from './pdfReport.js'
 import { analyzeBom } from './analysis.js'
+import { analyzeCsv } from './api.js'
+
+// A-F band matching the local eco-score grading (analysis.js summarise()),
+// reused so the AI-sourced score grades the same way.
+const gradeFor = (score) => (score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 60 ? 'C' : score >= 45 ? 'D' : 'F')
 
 // --- ecocompass palette (mirrors the CSS vars in theme.css) ----------------
 const T = {
@@ -396,12 +401,13 @@ function LineRow({ line, open, onToggle }) {
   )
 }
 
-function ResultsView({ setView, bom: bomInput, meta, warnings }) {
+function ResultsView({ setView, bom: bomInput, meta, warnings, file }) {
   const [carbonWeight, setCarbonWeight] = useState(0.6)
   const [annualVolume, setAnnualVolume] = useState(10000)
   const [analysis, setAnalysis] = useState(null)
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(() => new Set())
+  const [aiResult, setAiResult] = useState(null)
 
   // The upload/slider → analyzer seam. Re-runs whenever the BOM or the priority
   // weight changes; this is the single call site a real POST /analyze-bom
@@ -420,6 +426,20 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
     return () => { live = false }
   }, [bomInput, carbonWeight])
 
+  // Backend AI analysis (backend/main/main.py analyze_with_ai via POST
+  // /api/analyze-csv). Only available when a real file was uploaded (the
+  // sample BOM has none to send). Runs independently of the local engine
+  // above and, once resolved, overrides the eco score + headline below.
+  useEffect(() => {
+    let live = true
+    setAiResult(null)
+    if (!file) return () => { live = false }
+    analyzeCsv(file)
+      .then((res) => { if (live) setAiResult(res.analysis) })
+      .catch(() => { if (live) setAiResult(null) })
+    return () => { live = false }
+  }, [file])
+
   const totalKg = bomInput.reduce((s, b) => s + b.kg, 0)
   const toggle = (name) => setExpanded((prev) => {
     const next = new Set(prev)
@@ -427,14 +447,22 @@ function ResultsView({ setView, bom: bomInput, meta, warnings }) {
     return next
   })
 
-  const summary = analysis?.summary
-  const headline = summary
-    ? (summary.flaggedCount > 0
-      ? `${summary.viableCount} of ${bomInput.length} components have a recommended lower-impact swap; ${summary.flaggedCount} flagged for review.`
-      : (summary.ecoGrade <= 'B'
-        ? 'This build meaningfully cuts embodied carbon while holding cost and function.'
-        : 'Solid carbon and recyclability gains with a few trade-offs to review.'))
-    : ''
+  const localSummary = analysis?.summary
+  const aiScore = aiResult
+    ? Math.round((aiResult.sustainability_score + aiResult.recyclability_score + aiResult.longevity_score) / 3)
+    : null
+  const summary = localSummary && aiScore != null
+    ? { ...localSummary, ecoScore: aiScore, ecoGrade: gradeFor(aiScore) }
+    : localSummary
+  const headline = aiResult?.summary
+    ? aiResult.summary
+    : (summary
+      ? (summary.flaggedCount > 0
+        ? `${summary.viableCount} of ${bomInput.length} components have a recommended lower-impact swap; ${summary.flaggedCount} flagged for review.`
+        : (summary.ecoGrade <= 'B'
+          ? 'This build meaningfully cuts embodied carbon while holding cost and function.'
+          : 'Solid carbon and recyclability gains with a few trade-offs to review.'))
+      : '')
 
   // Assemble the payload the PDF generator renders from the live analysis.
   const exportPdf = () => {
@@ -804,6 +832,7 @@ export default function App() {
   const [bom, setBom] = useState(BOM)          // rows currently shown in results
   const [meta, setMeta] = useState(SAMPLE_META)
   const [warnings, setWarnings] = useState([])
+  const [uploadedFile, setUploadedFile] = useState(null) // raw File, sent to the AI backend
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const [sortKey, setSortKey] = useState('co2e_per_kg')
@@ -824,7 +853,7 @@ export default function App() {
 
   const analyzeSample = () => {
     setBom(BOM); setMeta(SAMPLE_META); setWarnings([]); setUploadError(null)
-    setFileName(null); setView('results')
+    setFileName(null); setUploadedFile(null); setView('results')
   }
 
   const analyzeFile = async (file) => {
@@ -836,7 +865,7 @@ export default function App() {
       setUploadError((warn && warn[0]) || 'No usable rows found in the file.')
       return
     }
-    setBom(rows); setMeta(m); setWarnings(warn || []); setView('results')
+    setBom(rows); setMeta(m); setWarnings(warn || []); setUploadedFile(file); setView('results')
   }
 
   return (
@@ -844,7 +873,7 @@ export default function App() {
       <TopNav view={view} setView={setView} />
 
       {view === 'upload' && <UploadView fileName={fileName} onFile={analyzeFile} onSample={analyzeSample} busy={busy} error={uploadError} />}
-      {view === 'results' && <ResultsView setView={setView} bom={bom} meta={meta} warnings={warnings} />}
+      {view === 'results' && <ResultsView setView={setView} bom={bom} meta={meta} warnings={warnings} file={uploadedFile} />}
       {view === 'library' && (
         <LibraryView
           query={query} setQuery={setQuery}
