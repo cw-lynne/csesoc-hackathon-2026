@@ -26,9 +26,13 @@ for _p in (BACKEND_DIR / "data", BACKEND_DIR / "main"):
         sys.path.append(str(_p))
 
 import barcode_lookup  # noqa: E402
-import goupc_lookup  # noqa: E402
 import openfacts_lookup  # noqa: E402
 import repairability_lookup as repair_lookup  # noqa: E402
+
+try:  # Go-UPC is an OPTIONAL second retail source — never let it crash the app.
+    import goupc_lookup  # noqa: E402
+except ImportError:
+    goupc_lookup = None
 from ai import (  # noqa: E402
     _content_block,
     estimate_carbon_from_category,
@@ -127,7 +131,9 @@ def _build_scan(*, gtin, repair_res, product_name, brand, category, image_block=
     off = openfacts_lookup.lookup_by_gtin(gtin) if gtin else None
     retail = None
     if gtin and (off is None or not off.get("product_name")):
-        retail = barcode_lookup.lookup_by_gtin(gtin) or goupc_lookup.lookup_by_gtin(gtin)
+        retail = barcode_lookup.lookup_by_gtin(gtin)
+        if retail is None and goupc_lookup is not None:
+            retail = goupc_lookup.lookup_by_gtin(gtin)
 
     name = (
         product_name
