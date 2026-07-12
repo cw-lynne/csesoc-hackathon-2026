@@ -157,6 +157,25 @@ def _build_scan(*, gtin, repair_res, product_name, brand, category, image_block=
     return scan
 
 
+@router.get("/scan-debug/{gtin}")
+def scan_debug(gtin: str):
+    """TEMP diagnostic: shows what each barcode source returns from the server's
+    own network (to tell "not found" apart from "rate-limited/blocked IP")."""
+    g = repair_lookup.normalize_gtin(gtin)
+    out = {"gtin": g, "off": None, "retail_raw": None, "retail_error": None}
+    try:
+        off = openfacts_lookup.lookup_by_gtin(g)
+        out["off"] = bool(off and off.get("product_name"))
+    except Exception as exc:  # noqa: BLE001
+        out["off"] = f"error: {exc}"
+    try:
+        raw = barcode_lookup._default_fetch(g)
+        out["retail_raw"] = {"code": raw.get("code"), "items": len(raw.get("items") or [])}
+    except Exception as exc:  # noqa: BLE001
+        out["retail_error"] = f"{type(exc).__name__}: {exc}"
+    return out
+
+
 @router.post("/scan-barcode")
 def scan_barcode(payload: dict = Body(...)):
     """Scan a product by barcode.
