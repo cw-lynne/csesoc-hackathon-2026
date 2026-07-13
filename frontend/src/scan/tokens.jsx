@@ -45,6 +45,10 @@ export const ICONS = {
   arrowUpRight: ['M7 17 17 7', 'M7 7h10v10'],
   megaphone: ['M3 11v2a1 1 0 0 0 1 1h2l4 4V6L6 10H4a1 1 0 0 0-1 1z', 'M15 8a5 5 0 0 1 0 8', 'M18 5a9 9 0 0 1 0 14'],
   upload: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12'],
+  zap: ['M13 2 3 14h9l-1 8 10-12h-9l1-8z'],
+  flip: ['M23 4v6h-6', 'M1 20v-6h6', 'M3.51 9a9 9 0 0 1 14.85-3.36L23 10', 'M1 14l4.64 4.36A9 9 0 0 0 20.49 15'],
+  x: ['M18 6 6 18', 'M6 6l12 12'],
+  keyboard: ['M2 6h20v12H2z', 'M6 10h.01', 'M10 10h.01', 'M14 10h.01', 'M18 10h.01', 'M7 14h10'],
 }
 
 // Shared button styles (mirror App.jsx).

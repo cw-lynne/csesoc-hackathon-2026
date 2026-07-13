@@ -84,27 +84,29 @@ function BioBadge({ big }) {
 // Top navigation
 // ---------------------------------------------------------------------------
 function TopNav({ view, setView }) {
+  // Padding is owned by .eco-navtab so it can grow into a proper touch target
+  // on a phone, where the tabs sit on their own scrollable row.
   const tab = (active) => ({
     background: 'transparent', border: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
     borderBottom: `2px solid ${active ? T.accent : 'transparent'}`,
-    color: active ? T.ink : T.muted, fontSize: 14, fontWeight: 500, padding: '6px 1px',
-    cursor: 'pointer',
+    color: active ? T.ink : T.muted, fontSize: 14, fontWeight: 500,
+    cursor: 'pointer', whiteSpace: 'nowrap',
   })
   return (
     <div className="no-print" style={{ position: 'sticky', top: 0, zIndex: 30, background: 'rgba(244,241,234,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: `1px solid ${T.line}` }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 32px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+      <div className="eco-nav-inner">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11, flexShrink: 0 }}>
           <img src="/logo-icon.svg" alt="ecocompass logo" width={30} height={30} style={{ display: 'block' }} />
           <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: '#1A2117' }}>ecocompass</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 26 }}>
+        <div className="eco-nav-tabs">
           {(() => {
             const isBom = view === 'upload' || view === 'results'
             return (
               <>
-                <button onClick={() => setView(isBom ? view : 'upload')} style={tab(isBom)}>Analyze BOM</button>
-                <button onClick={() => setView('library')} style={tab(view === 'library')}>Material library</button>
-                <button onClick={() => setView('scan')} style={tab(view === 'scan')}>Scan a product</button>
+                <button className="eco-navtab" onClick={() => setView(isBom ? view : 'upload')} style={tab(isBom)}>Analyze BOM</button>
+                <button className="eco-navtab" onClick={() => setView('library')} style={tab(view === 'library')}>Material library</button>
+                <button className="eco-navtab" onClick={() => setView('scan')} style={tab(view === 'scan')}>Scan a product</button>
               </>
             )
           })()}
@@ -120,9 +122,9 @@ function TopNav({ view, setView }) {
 function UploadView({ fileName, onFile, onSample, onLoadSample, busy, busyLabel, error }) {
   const chip = { background: T.card, color: T.ink3, border: `1px solid ${T.line}`, fontSize: 12.5, fontWeight: 500, padding: '6px 12px', borderRadius: 8, cursor: busy ? 'default' : 'pointer', fontFamily: 'Nunito, sans-serif' }
   return (
-    <div style={{ maxWidth: 660, margin: '0 auto', padding: '104px 32px 88px' }}>
+    <div className="eco-page eco-page--hero" style={{ maxWidth: 660, paddingBottom: 88 }}>
       <div className="mono" style={eyebrow}>Carbon + repairability engine</div>
-      <h1 style={{ fontSize: 44, fontWeight: 600, letterSpacing: '-0.035em', margin: '18px 0 18px', lineHeight: 1.08 }}>Score any build on carbon and repairability.</h1>
+      <h1 className="eco-h1" style={{ fontWeight: 600, letterSpacing: '-0.035em', margin: '18px 0 18px', lineHeight: 1.08 }}>Score any build on carbon and repairability.</h1>
       <p style={{ fontSize: 17, color: T.ink3, lineHeight: 1.6, margin: '0 0 24px', maxWidth: 540 }}>Drop in a bill of materials. ecocompass finds lower-carbon material swaps — and refuses the ones it can't justify, telling you why — then scores how repairable and long-lived the design is, with concrete fixes to raise it.</p>
       <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6, margin: '0 0 34px', maxWidth: 540 }}>Every figure is a transparent, sourced estimate — each material links to its primary source and the reason behind a rejected swap, so you can check our working, not just trust a number.</p>
 
@@ -190,11 +192,11 @@ function PrioritySlider({ value, onChange, loading }) {
         </div>
         <div className="mono" style={{ fontSize: 11.5, color: T.muted }}>{pct}% carbon / {100 - pct}% cost</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 12 }}>
+      <div className="eco-slider-row">
         <span style={{ fontSize: 11.5, color: value < 0.5 ? T.ink : T.muted, fontWeight: 500, whiteSpace: 'nowrap' }}>Cost-focused</span>
-        <input type="range" min={0} max={100} value={pct}
+        <input type="range" min={0} max={100} value={pct} aria-label="Ranking priority — cost versus carbon"
           onChange={(e) => onChange(Number(e.target.value) / 100)}
-          style={{ flex: 1, accentColor: T.accent, cursor: 'pointer' }} />
+          style={{ accentColor: T.accent, cursor: 'pointer' }} />
         <span style={{ fontSize: 11.5, color: value > 0.5 ? T.ink : T.muted, fontWeight: 500, whiteSpace: 'nowrap' }}>Carbon-focused</span>
       </div>
     </div>
@@ -224,12 +226,12 @@ function ScaledImpact({ co2eSavedPerUnit, annualVolume, setAnnualVolume }) {
         </div>
         <div style={{ fontSize: 12.5, opacity: 0.82, marginTop: 8 }}>{co2eSavedPerUnit.toFixed(1)} kg saved per unit × annual production volume</div>
       </div>
-      <div className="no-print">
+      <div className="no-print" style={{ minWidth: 0 }}>
         <div className="mono" style={{ fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.72, marginBottom: 6 }}>Units / year</div>
         <input type="number" min={0} value={annualVolume}
           onChange={(e) => setAnnualVolume(Math.max(0, Number(e.target.value) || 0))}
           className="mono"
-          style={{ width: 150, padding: '10px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.25)', fontSize: 15, background: 'rgba(255,255,255,0.14)', color: T.page, outline: 'none' }} />
+          style={{ width: '100%', maxWidth: 150, padding: '10px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.25)', fontSize: 15, background: 'rgba(255,255,255,0.14)', color: T.page, outline: 'none' }} />
       </div>
     </div>
   )
@@ -309,9 +311,9 @@ function RejectionPanel({ line }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {shown.map((c) => (
-          <div key={c.material} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, fontSize: 12, lineHeight: 1.5 }}>
+          <div key={c.material} style={{ display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap', gap: 9, fontSize: 12, lineHeight: 1.5 }}>
             <span className="mono" style={{ fontWeight: 600, color: T.ink, minWidth: 128, flexShrink: 0 }}>{c.material}</span>
-            <span style={{ color: T.bad }}>{c.reasons[0]}</span>
+            <span style={{ color: T.bad, flex: '1 1 auto', minWidth: 0 }}>{c.reasons[0]}</span>
           </div>
         ))}
       </div>
@@ -333,7 +335,7 @@ function ProsCons({ line }) {
     </div>
   )
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+    <div className="eco-grid-2" style={{ gap: 18 }}>
       {col('Pros', line.pros, T.accent, ['M20 6 9 17l-5-5'], 'No notable gains flagged.')}
       {col('Cons', line.cons, T.bad, ['M18 6 6 18M6 6l12 12'], 'No material trade-offs identified.')}
     </div>
@@ -406,7 +408,7 @@ function LibraryPanel({ library, repair }) {
             <span className="mono" style={{ fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted }}>Longevity score · this part</span>
             <span style={{ fontSize: 17, fontWeight: 700, color: scoreColor(repair.score) }}>{repair.score}<span className="mono" style={{ fontSize: 11, color: T.muted, fontWeight: 400 }}>/100</span></span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 18 }}>
+          <div className="eco-grid-2" style={{ columnGap: 18 }}>
             {repair.factors.map((f, i) => <FactorRow key={i} f={f} />)}
           </div>
         </div>
@@ -415,7 +417,7 @@ function LibraryPanel({ library, repair }) {
         Reference library
         <span style={{ textTransform: 'none', letterSpacing: 0, color: T.faint, fontFamily: 'Nunito, sans-serif', fontSize: 10.5 }}>· repairability &amp; circularity</span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="eco-grid-2" style={{ gap: 10 }}>
         <RefCard
           kind="Component" known={library.componentKnown} matchedTo={c?.component_type}
           chips={[
@@ -497,23 +499,25 @@ function LineRow({ line, open, onToggle }) {
       {open && (
         <tr>
           <td colSpan={6} style={{ padding: 0, borderBottom: `1px solid ${T.line2}`, background: T.cardAlt }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 340px) 1fr', gap: 22, padding: '8px 20px 22px', alignItems: 'start' }}>
-              <div>
-                <div className="mono" style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Property profile</div>
-                <Suspense fallback={<div className="eco-skeleton" style={{ width: '100%', height: 250, minWidth: 240, borderRadius: 12 }} />}>
-                  <RadarPanel line={line} />
-                </Suspense>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0, paddingTop: 6 }}>
-                <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.55 }}>{line.statusReason}</div>
-                {line.status === 'red' ? <RejectionPanel line={line} /> : <ProsCons line={line} />}
-                <div>
-                  <div className="mono" style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                    Candidates considered <span style={{ textTransform: 'none', letterSpacing: 0 }}>· {line.viable.length} viable / {line.rejected.length} rejected</span>
-                  </div>
-                  <CandidatesTable line={line} />
+            <div className="eco-detail-wrap">
+              <div className="eco-detail-grid" style={{ padding: '8px 20px 22px' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div className="mono" style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Property profile</div>
+                  <Suspense fallback={<div className="eco-skeleton" style={{ width: '100%', height: 250, borderRadius: 12 }} />}>
+                    <RadarPanel line={line} />
+                  </Suspense>
                 </div>
-                {line.library && <LibraryPanel library={line.library} repair={line.repair} />}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0, paddingTop: 6 }}>
+                  <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.55 }}>{line.statusReason}</div>
+                  {line.status === 'red' ? <RejectionPanel line={line} /> : <ProsCons line={line} />}
+                  <div>
+                    <div className="mono" style={{ fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                      Candidates considered <span style={{ textTransform: 'none', letterSpacing: 0 }}>· {line.viable.length} viable / {line.rejected.length} rejected</span>
+                    </div>
+                    <CandidatesTable line={line} />
+                  </div>
+                  {line.library && <LibraryPanel library={line.library} repair={line.repair} />}
+                </div>
               </div>
             </div>
           </td>
@@ -813,7 +817,7 @@ function MaterialReviewPanel({ bom, review, onSetMaterial }) {
   const pct = Math.round((done / total) * 100)
 
   const select = {
-    appearance: 'none', WebkitAppearance: 'none', maxWidth: 210,
+    appearance: 'none', WebkitAppearance: 'none',
     padding: '8px 30px 8px 11px', fontSize: 12.5, fontFamily: "'Geist Mono', monospace",
     background: `${T.page} url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A857A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>") no-repeat right 9px center`,
     color: T.ink, border: `1px solid ${T.line}`, borderRadius: 9, cursor: 'pointer', outline: 'none',
@@ -862,8 +866,8 @@ function MaterialReviewPanel({ bom, review, onSetMaterial }) {
                   {reviewed ? `Now using ${prettyMat(row.from)}` : row.materialReason}
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <select value={row.from} onChange={(e) => onSetMaterial(i, e.target.value)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, flex: '1 1 210px', minWidth: 0 }}>
+                <select className="eco-select" value={row.from} onChange={(e) => onSetMaterial(i, e.target.value)}
                   aria-label={`Material for ${row.component}`} style={select}>
                   {MATERIAL_GROUPS.map((g) => (
                     <optgroup key={g.cat} label={g.cat}>
@@ -1114,7 +1118,7 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
   const th = { fontFamily: "'Geist Mono', monospace", fontSize: 10.5, fontWeight: 400, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${T.line}`, padding: '12px', textAlign: 'left' }
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto', padding: '44px 32px 96px' }}>
+    <div className="eco-page" style={{ maxWidth: 1000, paddingTop: 44, paddingBottom: 96 }}>
       <div className="no-print" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 26 }}>
         <div>
           <a href="#" onClick={(e) => { e.preventDefault(); setView('upload') }} style={{ fontSize: 13, fontWeight: 500, color: T.muted, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -1251,7 +1255,7 @@ function LibraryView({ query, setQuery, category, setCategory, sortKey, sortDir,
   )
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '44px 32px 88px' }}>
+    <div className="eco-page" style={{ maxWidth: 1080, paddingTop: 44, paddingBottom: 88 }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap', marginBottom: 26 }}>
         <div>
           <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.03em' }}>Material library</div>
@@ -1443,9 +1447,9 @@ function DetailDrawer({ material, onClose }) {
           </div>
           <button onClick={onClose} style={{ border: `1px solid ${T.line}`, background: T.page, width: 32, height: 32, borderRadius: 8, cursor: 'pointer', color: T.ink3, fontSize: 17, lineHeight: 1 }}>×</button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: T.line, border: `1px solid ${T.line}`, borderRadius: 11, overflow: 'hidden', marginTop: 24 }}>
+        <div className="eco-grid-2" style={{ gap: 1, background: T.line, border: `1px solid ${T.line}`, borderRadius: 11, overflow: 'hidden', marginTop: 24 }}>
           {specs.map((s) => (
-            <div key={s.label} style={{ background: T.page, padding: '12px 14px' }}>
+            <div key={s.label} style={{ background: T.page, padding: '12px 14px', minWidth: 0 }}>
               <div className="mono" style={{ fontSize: 10, fontWeight: 400, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
               <div className="mono" style={{ fontSize: 15, fontWeight: 500, marginTop: 4, color: T.ink }}>{s.value}</div>
             </div>

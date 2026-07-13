@@ -26,8 +26,34 @@ const hasDetector = typeof window !== 'undefined' && 'BarcodeDetector' in window
 const cameraSupported = typeof navigator !== 'undefined' && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
 
 const inputStyle = {
-  flex: 1, padding: '11px 13px', fontSize: 14, fontFamily: 'ui-monospace, monospace',
+  padding: '12px 13px', fontSize: 14, fontFamily: 'ui-monospace, monospace',
   background: T.card, color: T.ink, border: `1px solid ${T.line}`, borderRadius: 10, outline: 'none',
+}
+
+// A control that floats over the camera feed (torch, flip). Round, glassy and
+// 40px so it stays a real touch target without crowding the frame.
+const overlayBtn = (on) => ({
+  width: 40, height: 40, padding: 0, flexShrink: 0,
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  borderRadius: '50%', cursor: 'pointer',
+  background: on ? 'rgba(255,255,255,0.92)' : 'rgba(20,26,18,0.5)',
+  border: `1px solid ${on ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.32)'}`,
+  backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+})
+
+// One corner of the framing reticle. Brackets read as "aim here" far better
+// than a closed rectangle, which looks like a disabled input.
+function Corner({ v, h }) {
+  const W = 3, L = 26
+  return (
+    <div style={{
+      position: 'absolute', width: L, height: L, [v]: -2, [h]: -2,
+      borderColor: 'rgba(255,255,255,0.95)', borderStyle: 'solid', borderWidth: 0,
+      [`border${v === 'top' ? 'Top' : 'Bottom'}Width`]: W,
+      [`border${h === 'left' ? 'Left' : 'Right'}Width`]: W,
+      [`border${v === 'top' ? 'Top' : 'Bottom'}${h === 'left' ? 'Left' : 'Right'}Radius`]: 12,
+    }} />
+  )
 }
 
 export default function BarcodeScanner({ onDetected, onCapture, busy }) {
@@ -44,6 +70,10 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
   const [canTorch, setCanTorch] = useState(false)
   const [torchOn, setTorchOn] = useState(false)
   const [canFlip, setCanFlip] = useState(false)
+  // A barcode has been read once and we're waiting on the confirming second
+  // read. Surfacing it turns the two-read confirm from a mystery pause into
+  // "hold steady".
+  const [steady, setSteady] = useState(false)
 
   // Stop the camera tracks + detection timer, but leave the live flag alone so
   // start() can reacquire (used by the camera flip).
@@ -64,6 +94,7 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
     setLive(false)
     setTorchOn(false)
     setCanTorch(false)
+    setSteady(false)
   }
 
   useEffect(() => stop, []) // cleanup on unmount
@@ -101,6 +132,7 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
 
   const start = async () => {
     setError('')
+    setSteady(false)
     if (!cameraSupported) {
       setError(
         typeof window !== 'undefined' && window.isSecureContext === false
@@ -153,6 +185,7 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
             // Confirm the same barcode twice before firing — kills stray misreads.
             if (raw && raw === pendingRef.current) { stop(); onDetected(raw); return }
             pendingRef.current = raw
+            setSteady(true)
           }
         } catch { /* transient decode error — keep scanning */ }
         timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS)
@@ -210,11 +243,18 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
     else setError('Enter at least 6 digits from the barcode.')
   }
 
+  // What the viewfinder tells the user right now. Without the native detector
+  // there is nothing to auto-detect, so the instruction is to tap Capture.
+  const status = !hasDetector
+    ? 'Frame the barcode, then tap Capture'
+    : steady
+      ? 'Hold steady…'
+      : 'Searching for a barcode…'
+
   return (
     <div>
-      <div style={{
-        position: 'relative', aspectRatio: '3 / 2', borderRadius: 18, overflow: 'hidden',
-        background: '#1A2117', border: `1px solid ${T.line}`,
+      <div className={`eco-viewfinder${live ? ' eco-viewfinder--live' : ''}`} style={{
+        borderRadius: 18, overflow: 'hidden', background: '#1A2117', border: `1px solid ${T.line}`,
       }}>
         {/* Always mounted so iOS can play it the instant the stream attaches. */}
         <video ref={videoRef} autoPlay playsInline muted style={{
@@ -223,13 +263,59 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
         }} />
 
         {live && (
-          <div style={{
-            position: 'absolute', left: '12%', right: '12%', top: '32%', height: '36%',
-            border: '2px solid rgba(255,255,255,0.9)', borderRadius: 14,
-            boxShadow: '0 0 0 100vmax rgba(0,0,0,0.34)', pointerEvents: 'none',
-          }}>
-            <div style={{ position: 'absolute', left: 8, right: 8, height: 2, borderRadius: 2, background: 'rgba(122,182,120,0.95)', boxShadow: '0 0 12px rgba(122,182,120,0.9)' }} className="eco-scan-line" />
-          </div>
+          <>
+            {/* Reticle. The huge spread box-shadow is what dims everything
+                outside the frame, so it must not swallow taps on the controls. */}
+            <div style={{
+              position: 'absolute', left: '9%', right: '9%', top: '31%', height: '30%',
+              borderRadius: 12, boxShadow: '0 0 0 100vmax rgba(0,0,0,0.42)', pointerEvents: 'none',
+            }}>
+              <Corner v="top" h="left" />
+              <Corner v="top" h="right" />
+              <Corner v="bottom" h="left" />
+              <Corner v="bottom" h="right" />
+              <div className="eco-scan-line" style={{
+                position: 'absolute', left: 10, right: 10, height: 2, borderRadius: 2,
+                background: 'rgba(122,182,120,0.95)', boxShadow: '0 0 12px rgba(122,182,120,0.9)',
+              }} />
+            </div>
+
+            {/* Camera controls, floated over the feed rather than stacked into a
+                button row that wraps unpredictably on a narrow screen. */}
+            <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', gap: 9 }}>
+              {canTorch && (
+                <button onClick={toggleTorch} className="eco-btn" style={overlayBtn(torchOn)}
+                  aria-pressed={torchOn} aria-label={torchOn ? 'Turn the light off' : 'Turn the light on'} title={torchOn ? 'Light off' : 'Light on'}>
+                  <Icon d={ICONS.zap} size={17} stroke={torchOn ? '#1A2117' : '#fff'} fill={torchOn ? '#1A2117' : 'none'} sw={1.8} />
+                </button>
+              )}
+              {canFlip && (
+                <button onClick={flip} disabled={busy} className="eco-btn" style={overlayBtn(false)}
+                  aria-label="Switch camera" title="Switch camera">
+                  <Icon d={ICONS.flip} size={16} stroke="#fff" sw={1.9} />
+                </button>
+              )}
+            </div>
+
+            <div style={{
+              position: 'absolute', left: 0, right: 0, bottom: 14,
+              display: 'flex', justifyContent: 'center', pointerEvents: 'none', padding: '0 16px',
+            }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7, maxWidth: '100%',
+                fontSize: 12, fontWeight: 600, color: '#fff', textAlign: 'center',
+                background: 'rgba(20,26,18,0.6)', border: '1px solid rgba(255,255,255,0.22)',
+                backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                borderRadius: 99, padding: '7px 14px',
+              }}>
+                <span style={{
+                  width: 7, height: 7, borderRadius: 99, flexShrink: 0,
+                  background: steady ? '#7AB678' : 'rgba(255,255,255,0.7)',
+                }} />
+                {status}
+              </span>
+            </div>
+          </>
         )}
 
         {!live && (
@@ -247,52 +333,55 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
         )}
       </div>
 
-      {live && !hasDetector && (
-        <div style={{ fontSize: 12, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
-          Frame the product (or its barcode) and tap Capture — we'll read it for you.
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+      {/* One primary action, full width. Stop is secondary and doesn't compete. */}
+      <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
         {!live ? (
-          <button onClick={start} disabled={busy} className="eco-btn" style={{ ...btnAccent, opacity: busy ? 0.55 : 1 }}>
-            <Icon d={ICONS.camera} size={15} stroke={T.page} sw={1.9} /> Start camera
+          <button onClick={start} disabled={busy} className="eco-btn" style={{ ...btnAccent, flex: 1, opacity: busy ? 0.55 : 1 }}>
+            <Icon d={ICONS.camera} size={16} stroke={T.page} sw={1.9} /> Start camera
           </button>
         ) : (
           <>
-            <button onClick={capture} disabled={busy} className="eco-btn" style={{ ...btnAccent, opacity: busy ? 0.55 : 1 }}>
-              <Icon d={ICONS.camera} size={15} stroke={T.page} sw={1.9} /> Capture
+            <button onClick={capture} disabled={busy} className="eco-btn" style={{ ...btnAccent, flex: 1, opacity: busy ? 0.55 : 1 }}>
+              <Icon d={ICONS.camera} size={16} stroke={T.page} sw={1.9} /> Capture
             </button>
-            {canTorch && (
-              <button onClick={toggleTorch} className="eco-btn" style={btnGhost}>
-                {torchOn ? 'Light off' : 'Light on'}
-              </button>
-            )}
-            {canFlip && (
-              <button onClick={flip} disabled={busy} className="eco-btn" style={btnGhost}>Flip</button>
-            )}
-            <button onClick={stop} className="eco-btn" style={btnGhost}>Stop camera</button>
+            <button onClick={stop} className="eco-btn" style={{ ...btnGhost, flexShrink: 0, paddingInline: 14 }}
+              aria-label="Stop the camera" title="Stop camera">
+              <Icon d={ICONS.x} size={15} stroke={T.ink3} sw={2.1} />
+            </button>
           </>
         )}
       </div>
 
       {error && (
-        <div style={{ marginTop: 12, fontSize: 12.5, color: '#8A3F52', lineHeight: 1.5 }}>{error}</div>
+        <div style={{
+          marginTop: 12, background: 'rgba(176,87,110,0.08)', border: '1px solid rgba(176,87,110,0.34)',
+          color: '#8A3F52', fontSize: 12.5, lineHeight: 1.55, borderRadius: 10, padding: '11px 13px',
+        }}>{error}</div>
       )}
 
-      <form onSubmit={submitManual} style={{ marginTop: 16 }}>
-        <div style={{ fontSize: 12, color: T.muted, marginBottom: 7 }}>Or enter the barcode number</div>
-        <div style={{ display: 'flex', gap: 8 }}>
+      <form onSubmit={submitManual} style={{ marginTop: 18 }}>
+        <label htmlFor="eco-barcode-manual" style={{
+          display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.muted, marginBottom: 8,
+        }}>
+          <Icon d={ICONS.keyboard} size={13} stroke={T.muted} sw={1.8} />
+          Or type the number under the barcode
+        </label>
+        <div className="eco-barcode-entry">
           <input
+            id="eco-barcode-manual"
             value={manual}
             onChange={(e) => setManual(e.target.value)}
             onFocus={(e) => { e.target.style.borderColor = T.accent }}
             onBlur={(e) => { e.target.style.borderColor = T.line }}
             inputMode="numeric"
+            autoComplete="off"
             placeholder="e.g. 3701234567890"
             style={inputStyle}
           />
-          <button type="submit" disabled={busy} className="eco-btn" style={{ ...btnGhost, opacity: busy ? 0.55 : 1 }}>Look up</button>
+          <button type="submit" disabled={busy || !manual.trim()} className="eco-btn"
+            style={{ ...btnGhost, flexShrink: 0, opacity: busy || !manual.trim() ? 0.5 : 1 }}>
+            Look up
+          </button>
         </div>
       </form>
     </div>

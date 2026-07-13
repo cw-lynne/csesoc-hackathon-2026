@@ -68,12 +68,12 @@ function GradeTile({ title, score, band, provenanceKind, confidence, caption }) 
           </span>
           <span style={{ fontSize: 9, color: T.faint, marginTop: 2 }}>/ 100</span>
         </div>
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             display: 'inline-block', fontSize: 13, fontWeight: 800, color: b.fg,
             background: b.bg, borderRadius: 8, padding: '4px 11px',
           }}>{has ? b.label : 'No data yet'}</div>
-          {caption && <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5, marginTop: 8, maxWidth: 240 }}>{caption}</div>}
+          {caption && <div style={{ fontSize: 11.5, color: T.ink3, lineHeight: 1.5, marginTop: 8, overflowWrap: 'anywhere' }}>{caption}</div>}
         </div>
       </div>
     </div>
@@ -93,12 +93,12 @@ function CriteriaBars({ criteria }) {
         {entries.map(([label, val]) => {
           const b = bandStyle(bandFromScore(val))
           return (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 12, color: T.ink2, width: 168, flexShrink: 0 }}>{label}</span>
-              <div style={{ flex: 1, height: 7, background: T.cardAlt, borderRadius: 99, overflow: 'hidden' }}>
+            <div key={label} className="eco-criteria-row">
+              <span className="eco-criteria-label" style={{ fontSize: 12, color: T.ink2 }}>{label}</span>
+              <div style={{ flex: 1, minWidth: 60, height: 7, background: T.cardAlt, borderRadius: 99, overflow: 'hidden' }}>
                 <div style={{ width: `${val}%`, height: '100%', background: b.ring, borderRadius: 99 }} />
               </div>
-              <span className="mono" style={{ fontSize: 11, color: T.muted, width: 30, textAlign: 'right' }}>{val}</span>
+              <span className="mono" style={{ fontSize: 11, color: T.muted, width: 30, flexShrink: 0, textAlign: 'right' }}>{val}</span>
             </div>
           )
         })}
@@ -130,11 +130,11 @@ export default function ScanResultCard({ scan }) {
             style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 12, border: `1px solid ${T.line}`, background: T.cardAlt, flexShrink: 0 }}
           />
         )}
-        <div>
-          <div style={{ marginBottom: 4, fontSize: 12, color: T.muted }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ marginBottom: 4, fontSize: 12, color: T.muted, overflowWrap: 'anywhere' }}>
             {scan.brand ? scan.brand + ' · ' : ''}{scan.category || 'Product'}{scan.gtin ? ` · ${scan.gtin}` : ''}
           </div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+          <h2 style={{ fontSize: 'clamp(19px, 5vw, 24px)', fontWeight: 700, letterSpacing: '-0.02em', margin: 0, overflowWrap: 'anywhere' }}>
             {scan.productName || 'Scanned product'}
           </h2>
         </div>
@@ -182,10 +182,10 @@ export default function ScanResultCard({ scan }) {
           <div style={{ width: 46, height: 46, flexShrink: 0, borderRadius: '50%', border: `4px solid ${bandStyle(alt.band).ring}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: bandStyle(alt.band).fg }}>
             {alt.score}
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Better-scoring option</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{alt.productName}</div>
-            <div style={{ fontSize: 12, color: T.ink3 }}>{alt.brand ? alt.brand + ' · ' : ''}scores {alt.score}/100 for repairability ({bandStyle(alt.band).label.toLowerCase()})</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, overflowWrap: 'anywhere' }}>{alt.productName}</div>
+            <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.45 }}>{alt.brand ? alt.brand + ' · ' : ''}scores {alt.score}/100 for repairability ({bandStyle(alt.band).label.toLowerCase()})</div>
           </div>
         </Reveal>
       )}

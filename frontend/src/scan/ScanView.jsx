@@ -55,11 +55,11 @@ export default function ScanView() {
   const reset = () => { setScan(null); setError('') }
 
   return (
-    <div style={{ maxWidth: 620, margin: '0 auto', padding: '48px 24px 96px' }}>
+    <div className="eco-page" style={{ maxWidth: 620, paddingTop: 48, paddingBottom: 96 }}>
       <div className="mono" style={{ fontSize: 11, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.14em' }}>
         Instant product score
       </div>
-      <h1 style={{ fontSize: 34, fontWeight: 700, letterSpacing: '-0.03em', margin: '16px 0 10px', lineHeight: 1.1 }}>
+      <h1 className="eco-h2" style={{ fontWeight: 700, letterSpacing: '-0.03em', margin: '16px 0 10px', lineHeight: 1.1 }}>
         Scan a product
       </h1>
       <p style={{ fontSize: 15.5, color: T.ink3, lineHeight: 1.6, margin: '0 0 28px' }}>
