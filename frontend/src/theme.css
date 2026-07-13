@@ -95,26 +95,21 @@ button { font-family: 'Nunito', sans-serif; }
 }
 
 /* --- responsive layer ------------------------------------------------------
-   Component layout lives inline in the JSX, and an inline style can't express a
-   media query — so every layout that must change shape on a phone owns a class
-   here, and its inline layout prop is removed so this file is the only thing
-   setting it.
+   Component layout lives inline in the JSX and an inline style can't hold a
+   media query, so any layout that changes shape on a phone owns a class here
+   and its inline layout prop is dropped.
 
-   Two rules do most of the work of keeping columns off each other:
-     * grid tracks are minmax(0, 1fr), never a bare 1fr. A bare 1fr floors at the
-       track's min-content width, so one long unbreakable token (a material id, a
-       URL) pushes its track past its share and shunts the next column off-screen.
-     * flex/grid children holding text get min-width: 0, which defeats the same
-       auto-minimum and lets them actually shrink. */
+   Grid tracks are minmax(0, 1fr), never a bare 1fr: a bare 1fr floors at
+   min-content, so one long token pushes its track past its share and shunts the
+   next column off-screen. min-width: 0 on text-holding flex/grid children
+   defeats the same auto-minimum. */
 
-/* Nothing should be able to scroll the page sideways. `clip` rather than
-   `hidden` because `hidden` makes the body a scroll container, which silently
-   breaks the sticky top nav. */
+/* `clip` not `hidden`: `hidden` makes the body a scroll container, which breaks
+   the sticky top nav. */
 html, body { max-width: 100%; overflow-x: clip; }
 img, svg, video, canvas { max-width: 100%; }
 
-/* Page shell. Gutters scale with the viewport instead of spending a fixed 32px
-   of a 375px screen on whitespace. Callers keep their own max-width. */
+/* Page shell. Gutters scale with the viewport. Callers keep their own max-width. */
 .eco-page {
   width: 100%;
   margin-inline: auto;
@@ -122,16 +117,14 @@ img, svg, video, canvas { max-width: 100%; }
 }
 .eco-page--hero { padding-top: clamp(44px, 9vw, 104px); }
 
-/* Fluid display type — 44px reads as shouting on a phone. */
 .eco-h1 { font-size: clamp(29px, 7vw, 44px); }
 .eco-h2 { font-size: clamp(25px, 6vw, 34px); }
 
-/* Two-up grid that folds to one column once the columns stop earning their keep. */
 .eco-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 620px) { .eco-grid-2 { grid-template-columns: minmax(0, 1fr); } }
 
-/* Expanded results row: property radar beside the reasoning, stacked below it
-   once side-by-side would squeeze the radar under its own minimum. */
+/* Expanded results row: radar beside the reasoning, stacked once side-by-side
+   would squeeze the radar under its minimum. */
 .eco-detail-grid {
   display: grid;
   grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
@@ -140,11 +133,10 @@ img, svg, video, canvas { max-width: 100%; }
 }
 @media (max-width: 900px) { .eco-detail-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
 
-/* The expanded detail lives inside the results table, which is 660px wide and
-   scrolls sideways on a phone. Left unchecked the detail inherits that width, so
-   the reasoning and radar sit off-screen behind a horizontal scroll. Pin it to
-   the viewport instead: it stays put and stays readable while the summary
-   columns above it scroll. */
+/* The expanded detail sits inside the 660px results table, which scrolls
+   sideways on a phone. Without this it inherits that width and the content ends
+   up off-screen. Pin it to the viewport so it stays readable while the summary
+   columns scroll. */
 @media (max-width: 900px) {
   .eco-detail-wrap {
     position: sticky;
@@ -154,9 +146,8 @@ img, svg, video, canvas { max-width: 100%; }
   }
 }
 
-/* Top nav. The wordmark plus three tabs stop fitting on one line at ~720px, so
-   the tabs drop to their own row and scroll sideways rather than wrapping up
-   into the logo. */
+/* Top nav. Wordmark + three tabs stop fitting on one line at ~720px, so the tabs
+   drop to their own row and scroll rather than wrapping into the logo. */
 .eco-nav-inner {
   max-width: 1080px;
   margin-inline: auto;
@@ -184,21 +175,20 @@ img, svg, video, canvas { max-width: 100%; }
   .eco-navtab { padding: 8px 1px 12px; }
 }
 
-/* The material dropdown is capped on desktop so it doesn't sprawl; on a phone it
-   wraps to its own line and should just take the width. */
+/* Capped on desktop so it doesn't sprawl; full width once it wraps to its own
+   line on a phone. */
 .eco-select { max-width: 210px; }
 
-/* Scan: camera viewfinder. A phone is held in portrait, so the live feed gets a
-   tall frame to aim with (3:2 is a desktop-webcam shape). The idle placeholder
-   stays compact — an empty 450px slab of dark green is just a wall. */
+/* Camera viewfinder. The live feed gets a tall frame on a phone, which is held
+   in portrait; 3:2 is a desktop-webcam shape. The idle placeholder stays short. */
 .eco-viewfinder { position: relative; aspect-ratio: 3 / 2; }
 @media (max-width: 640px) {
   .eco-viewfinder { aspect-ratio: 4 / 3; }
   .eco-viewfinder--live { aspect-ratio: 3 / 4; }
 }
 
-/* Scan: repairability breakdown. Below ~560px the fixed label column starves the
-   bar, so the label takes its own line and the bar + value sit under it. */
+/* Repairability breakdown. Below 560px the fixed label column starves the bar, so
+   the label takes its own line. */
 .eco-criteria-row { display: flex; align-items: center; gap: 10px; }
 .eco-criteria-label { width: 168px; flex-shrink: 0; }
 @media (max-width: 560px) {
@@ -206,9 +196,9 @@ img, svg, video, canvas { max-width: 100%; }
   .eco-criteria-label { width: 100%; }
 }
 
-/* Carbon↔cost slider. Between its two nowrap labels the track is the only thing
-   that can give, and on a phone it collapses to ~80px — unusable. Below 560px the
-   track takes its own full-width line and the labels sit under it, split apart. */
+/* Carbon/cost slider. The track is the only thing between the two nowrap labels
+   that can give, and it collapses to ~80px on a phone. Below 560px it takes its
+   own line and the labels sit under it. */
 .eco-slider-row { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
 .eco-slider-row > input[type="range"] { flex: 1; min-width: 0; }
 @media (max-width: 560px) {
@@ -217,8 +207,6 @@ img, svg, video, canvas { max-width: 100%; }
   .eco-slider-row > span:first-of-type { flex: 1; }
 }
 
-/* Barcode entry: input and button share a line, then stack when the input would
-   be squeezed below a usable width. */
 .eco-barcode-entry { display: flex; gap: 8px; }
 .eco-barcode-entry > input { flex: 1; min-width: 0; }
 @media (max-width: 359px) {
@@ -227,12 +215,10 @@ img, svg, video, canvas { max-width: 100%; }
 }
 
 @media (max-width: 640px) {
-  /* Fingers are not cursors. */
-  .eco-btn { min-height: 44px; }
+  .eco-btn { min-height: 44px; }          /* touch target */
   .eco-select { max-width: 100%; width: 100%; }
-  /* iOS Safari zooms the whole page when a focused field's text is under 16px.
-     Raising it here is the only way to stop that, and it must beat the inline
-     font-size the fields set. */
+  /* iOS Safari zooms the page when a focused field's text is under 16px. Must
+     beat the inline font-size the fields set. */
   input, select, textarea { font-size: 16px !important; }
 }
 

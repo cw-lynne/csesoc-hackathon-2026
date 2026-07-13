@@ -1,13 +1,12 @@
-"""Consumer "scan a product" endpoints — the free, Yuka-style growth wedge.
+"""Consumer "scan a product" endpoints.
 
-A thin layer that COMBINES two things and never touches the paid B2B flow:
+A thin layer that combines two things:
   * a VERIFIED repairability score (French index, keyed by barcode), and
   * an ESTIMATED carbon grade (Claude infers the category; the number is looked up).
 
 It does not import or modify analysis.js / score.py or the /analyze-bom,
-/extract-bom, /narrative endpoints. Every score it returns carries a visible
-``provenance`` label so "Verified" and "Estimated" can never be confused — the
-core trust requirement of this feature.
+/extract-bom, /narrative endpoints. Every score carries a visible ``provenance``
+label so "Verified" and "Estimated" cannot be confused.
 
 Routes (mounted under the app in api/main.py):
   POST /scan-barcode      { gtin }                    -> ScanResult
@@ -44,11 +43,11 @@ from contributions import save_contribution  # noqa: E402
 
 router = APIRouter(tags=["scan"])
 
-# Human-readable provenance labels — the trust/legal requirement. "Verified" and
-# "Estimated" must be textually and visually distinct wherever a score is shown.
-PROV_VERIFIED = "Verified — French repairability index"
-PROV_ESTIMATED = "Estimated — AI analysis"
-PROV_ECO = "Verified — Open Food Facts environmental score"
+# Provenance labels. "Verified" and "Estimated" must stay textually and visually
+# distinct wherever a score is shown.
+PROV_VERIFIED = "Verified. French repairability index."
+PROV_ESTIMATED = "Estimated. AI analysis."
+PROV_ECO = "Verified. Open Food Facts environmental score."
 
 
 def _repair_payload(res):

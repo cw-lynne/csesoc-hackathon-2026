@@ -266,9 +266,9 @@ function swapCard(r, s) {
   // Pre-measure pros/cons to size the card and keep it on one page.
   r.font('normal', 9)
   const colW = innerW / 2 - 8
-  const prosLines = (s.pros.length ? s.pros : ['No notable gains flagged.'])
+  const prosLines = (s.pros.length ? s.pros : ['None.'])
     .map((t) => d.splitTextToSize('-  ' + sanitize(t), colW))
-  const consLines = (s.cons.length ? s.cons : ['No material trade-offs identified.'])
+  const consLines = (s.cons.length ? s.cons : ['None.'])
     .map((t) => d.splitTextToSize('-  ' + sanitize(t), colW))
   const prosH = prosLines.reduce((a, l) => a + l.length * 12, 0)
   const consH = consLines.reduce((a, l) => a + l.length * 12, 0)
@@ -344,9 +344,9 @@ function fixesSection(r, data) {
   const d = r.doc
   r.need(40)
   r.font('bold', 12).set(C.ink)
-  d.text('Design for longevity', M, r.y + 10)
+  d.text('Design fixes', M, r.y + 10)
   r.font('normal', 10).set(C.muted)
-  d.text(`${data.fixes.length} recommended fixes`, M + 168, r.y + 10)
+  d.text(`${data.fixes.length} fixes`, M + 168, r.y + 10)
   r.y += 26
 
   const rowH = 26
@@ -375,7 +375,7 @@ function disclaimer(r) {
   r.need(40)
   r.y += 6
   r.paragraph(
-    'Cost and CO2e are computed from the ecocompass material library; figures marked "estimated" in the dataset are indicative, not sourced to a single figure. Bio-based material families carry directional numbers for a material class, not measured values from one recipe. The repairability score is a transparent point model — a base score adjusted for fastening, sourcing, failure risk, recycling potential and service life.',
+    'Cost and CO2e are computed from the ecocompass material library. Figures marked "estimated" in the dataset are indicative, not sourced to a single figure. Bio-based material families carry directional numbers for a material class, not measured values from one recipe. The repairability score is a point model: a base score adjusted for fastening, sourcing, failure risk, recycling potential and service life.',
     { size: 8, color: C.faint, lh: 1.5 }
   )
 }

@@ -1,16 +1,15 @@
-// The scan result card — the heart of consumer scan mode.
+// Scan result card.
 //
-// Shows BOTH grades (repairability + carbon) as 0-100 scores with a 4-band
-// colour verdict, each carrying a provenance badge that makes "Verified" and
-// "Estimated" impossible to confuse. Plus the grounded narrative, one better
-// alternative, and the call-out-brand action.
+// Shows both grades (repairability + carbon) as 0-100 scores with a 4-band
+// colour verdict, each carrying a provenance badge separating "Verified" from
+// "Estimated". Plus the narrative, one better alternative, and the brand action.
 import React from 'react'
 import { T, Icon, ICONS, bandStyle } from './tokens.jsx'
 import Reveal from '../Reveal.jsx'
 import CallOutBrand from './CallOutBrand.jsx'
 
-// Provenance badge — the trust requirement. Verified = solid green + check;
-// Estimated = dashed amber + spark + confidence. Deliberately distinct.
+// Provenance badge. Verified = solid green + check. Estimated = dashed amber +
+// spark + confidence. The two must not be mistakable for each other.
 function ProvenanceBadge({ kind, confidence }) {
   if (kind === 'verified') {
     return (
@@ -150,8 +149,8 @@ export default function ScanResultCard({ scan }) {
             confidence={r.confidence}
             caption={
               r.source === 'ai_estimated'
-                ? (r.rationale ? `${r.provenance} — ${r.rationale}` : r.provenance)
-                : (r.provenance || 'No verified repairability data yet.')
+                ? (r.rationale ? `${r.provenance} ${r.rationale}` : r.provenance)
+                : (r.provenance || 'No verified repairability data.')
             }
           />
         </Reveal>
@@ -162,7 +161,7 @@ export default function ScanResultCard({ scan }) {
             band={c?.band}
             provenanceKind={c ? (c.verified ? 'verified' : 'estimated') : 'none'}
             confidence={c?.confidence}
-            caption={c ? (c.provenance + (c.rationale ? ` — ${c.rationale}` : '')) : 'No carbon estimate available.'}
+            caption={c ? (c.provenance + (c.rationale ? ` ${c.rationale}` : '')) : 'No carbon estimate available.'}
           />
         </Reveal>
       </div>

@@ -1,7 +1,7 @@
 """GTIN → repairability lookup over the French durability/repairability index.
 
-Consumer "scan a product" mode (the free Yuka-style wedge) needs a VERIFIED
-repairability score keyed by barcode. France publishes the *indice de
+Consumer "scan a product" mode needs a VERIFIED repairability score keyed by
+barcode. France publishes the *indice de
 réparabilité* (and its successor, the *indice de durabilité*) as consolidated
 CSVs on data.gouv.fr, scored 0–10 per product model. This module:
 

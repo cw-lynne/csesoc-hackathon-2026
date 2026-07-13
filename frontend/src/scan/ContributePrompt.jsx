@@ -53,9 +53,9 @@ export default function ContributePrompt({ gtin, productName }) {
     return (
       <div style={{ background: 'rgba(91,122,78,0.10)', border: '1px solid rgba(91,122,78,0.34)', borderRadius: 16, padding: '20px 22px', textAlign: 'center' }}>
         <Icon d={ICONS.check} size={26} stroke={T.good} sw={2.2} />
-        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 8 }}>Thank you!</div>
+        <div style={{ fontSize: 15, fontWeight: 700, marginTop: 8 }}>Submitted</div>
         <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.55, marginTop: 5, maxWidth: 360, marginInline: 'auto' }}>
-          Your submission helps us score this product for the next person who scans it.
+          This product will be scored for the next person who scans it.
         </div>
       </div>
     )
@@ -71,17 +71,17 @@ export default function ContributePrompt({ gtin, productName }) {
     <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 16, padding: '22px 22px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 6 }}>
         <Icon d={ICONS.camera} size={18} stroke={T.accent} sw={1.9} />
-        <span style={{ fontSize: 16, fontWeight: 700 }}>Help us score this product</span>
+        <span style={{ fontSize: 16, fontWeight: 700 }}>No data for this product</span>
       </div>
       <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.55, marginBottom: 16, maxWidth: 460 }}>
-        We don't have verified data for this one yet{gtin ? ` (barcode ${gtin})` : ''}. Add what you know — a
-        photo of the product or its label helps most — and we'll use it to score it.
+        Nothing verified for this one yet{gtin ? ` (barcode ${gtin})` : ''}. Add what you know. A photo of the
+        product or its label is the most useful.
       </div>
 
       <div style={{ display: 'grid', gap: 11 }}>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Product name (e.g. Acme Kettle K10)" style={input} />
-        <input value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="Main materials, if you know them (e.g. steel, ABS plastic)" style={input} />
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Anything else — repairability, spare parts, etc." style={{ ...input, resize: 'vertical' }} />
+        <input value={materials} onChange={(e) => setMaterials(e.target.value)} placeholder="Main materials (e.g. steel, ABS plastic)" style={input} />
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Repairability, spare parts, anything else" style={{ ...input, resize: 'vertical' }} />
 
         <label className="eco-btn" style={{ ...btnGhost, alignSelf: 'flex-start', cursor: 'pointer' }}>
           <Icon d={ICONS.upload} size={14} stroke={T.ink} sw={1.9} />

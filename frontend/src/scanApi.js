@@ -1,5 +1,5 @@
-// Client for the consumer "scan a product" endpoints (the free wedge). Separate
-// from api.js so the consumer layer stays clearly decoupled from the B2B flow.
+// Client for the consumer "scan a product" endpoints. Separate from api.js to
+// keep the scan layer decoupled from the BOM flow.
 // All requests go through Vite's /api proxy → FastAPI (see vite.config.js).
 
 // Scan by barcode number. Returns a ScanResult:

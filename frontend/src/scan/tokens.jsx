@@ -13,7 +13,7 @@ export const T = {
   good: '#5B7A4E', warn: '#A87A3C', bad: '#B0576E',
 }
 
-// The 4-band verdict colours (Yuka-style traffic-light, tuned to the warm palette).
+// The 4-band verdict colours (traffic-light, tuned to the warm palette).
 // Used identically for both the repairability and carbon grades.
 export const BAND = {
   Excellent: { fg: '#2F6B43', bg: 'rgba(47,107,67,0.12)', ring: '#2F6B43', label: 'Excellent' },

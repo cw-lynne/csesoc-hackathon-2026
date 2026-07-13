@@ -1,22 +1,21 @@
 // Camera barcode scanner for consumer scan mode.
 //
-// Works on every mobile browser, not just the ones with the native
-// BarcodeDetector API:
+// Works on mobile browsers without the native BarcodeDetector API:
 //   * The live camera (getUserMedia) opens on any browser in a secure context.
 //   * Where BarcodeDetector exists (Chrome/Edge/Android) barcodes auto-detect.
 //   * Where it doesn't (iOS Safari, Firefox) a "Capture" button grabs the frame
-//     and runs it through the AI photo scan — so scanning still works.
+//     and runs it through the AI photo scan.
 //   * Manual barcode entry is always offered as a final fallback.
 //
-// Phone-friendly extras, each capability-gated so they no-op where unsupported:
-//   * a torch/flashlight toggle (Android Chrome exposes MediaStreamTrack torch),
-//   * a front/back camera flip (only shown when >1 camera exists),
-//   * continuous autofocus for sharper barcode reads,
-//   * a two-read confirm so a single misdecode can't fire a wrong lookup.
+// Capability-gated extras, each a no-op where unsupported:
+//   * torch toggle (Android Chrome exposes MediaStreamTrack torch),
+//   * front/back camera flip (shown only when >1 camera exists),
+//   * continuous autofocus,
+//   * a two-read confirm so one misdecode can't fire a wrong lookup.
 //
 // getUserMedia requires a secure context: https, or http on localhost. Over a
-// plain-http LAN address (e.g. a phone hitting http://192.168.x.x) the API is
-// absent — we detect that and tell the user to use https.
+// plain-http LAN address (a phone hitting http://192.168.x.x) the API is absent.
+// We detect that and tell the user to use https.
 import React, { useEffect, useRef, useState } from 'react'
 import { T, Icon, ICONS, btnAccent, btnGhost } from './tokens.jsx'
 
@@ -30,8 +29,8 @@ const inputStyle = {
   background: T.card, color: T.ink, border: `1px solid ${T.line}`, borderRadius: 10, outline: 'none',
 }
 
-// A control that floats over the camera feed (torch, flip). Round, glassy and
-// 40px so it stays a real touch target without crowding the frame.
+// A control floating over the camera feed (torch, flip). 40px so it stays a real
+// touch target without crowding the frame.
 const overlayBtn = (on) => ({
   width: 40, height: 40, padding: 0, flexShrink: 0,
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -41,8 +40,7 @@ const overlayBtn = (on) => ({
   backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
 })
 
-// One corner of the framing reticle. Brackets read as "aim here" far better
-// than a closed rectangle, which looks like a disabled input.
+// One corner of the framing reticle.
 function Corner({ v, h }) {
   const W = 3, L = 26
   return (
@@ -71,8 +69,7 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
   const [torchOn, setTorchOn] = useState(false)
   const [canFlip, setCanFlip] = useState(false)
   // A barcode has been read once and we're waiting on the confirming second
-  // read. Surfacing it turns the two-read confirm from a mystery pause into
-  // "hold steady".
+  // read. Surfaced so the two-read confirm isn't an unexplained pause.
   const [steady, setSteady] = useState(false)
 
   // Stop the camera tracks + detection timer, but leave the live flag alone so
@@ -103,12 +100,12 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
     const name = err && err.name
     setError(
       name === 'NotAllowedError' || name === 'SecurityError'
-        ? 'Camera access was blocked. Allow the camera for this site (tap the ᴀA / lock icon in the address bar → Camera → Allow), then try again.'
+        ? 'Camera blocked. Allow camera access for this site (lock icon in the address bar → Camera → Allow), then try again.'
       : name === 'NotFoundError' || name === 'OverconstrainedError'
-        ? 'No usable camera was found on this device — enter the barcode number below instead.'
+        ? 'No camera on this device. Enter the barcode number below.'
       : name === 'NotReadableError'
-        ? 'The camera is already in use by another app. Close it and try again.'
-        : "Couldn't open the camera — enter the barcode number below instead.",
+        ? 'The camera is in use by another app. Close it and try again.'
+        : 'Camera failed to open. Enter the barcode number below.',
     )
     stop()
   }
@@ -136,8 +133,8 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
     if (!cameraSupported) {
       setError(
         typeof window !== 'undefined' && window.isSecureContext === false
-          ? 'The camera needs a secure (https) connection. Open this site over https — then Start camera will work. For now, enter the barcode number below.'
-          : "This browser can't open the camera — enter the barcode number below instead.",
+          ? 'The camera requires https. Open this site over https, or enter the barcode number below.'
+          : 'This browser cannot open the camera. Enter the barcode number below.',
       )
       return
     }
@@ -243,13 +240,13 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
     else setError('Enter at least 6 digits from the barcode.')
   }
 
-  // What the viewfinder tells the user right now. Without the native detector
-  // there is nothing to auto-detect, so the instruction is to tap Capture.
+  // Without the native detector there is nothing to auto-detect, so the
+  // instruction is to tap Capture.
   const status = !hasDetector
     ? 'Frame the barcode, then tap Capture'
     : steady
-      ? 'Hold steady…'
-      : 'Searching for a barcode…'
+      ? 'Hold steady'
+      : 'Searching for a barcode'
 
   return (
     <div>
@@ -264,8 +261,8 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
 
         {live && (
           <>
-            {/* Reticle. The huge spread box-shadow is what dims everything
-                outside the frame, so it must not swallow taps on the controls. */}
+            {/* Reticle. The large spread box-shadow dims everything outside the
+                frame, so it must not swallow taps on the controls. */}
             <div style={{
               position: 'absolute', left: '9%', right: '9%', top: '31%', height: '30%',
               borderRadius: 12, boxShadow: '0 0 0 100vmax rgba(0,0,0,0.42)', pointerEvents: 'none',
@@ -280,8 +277,8 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
               }} />
             </div>
 
-            {/* Camera controls, floated over the feed rather than stacked into a
-                button row that wraps unpredictably on a narrow screen. */}
+            {/* Camera controls, over the feed rather than in a button row that
+                wraps unpredictably on a narrow screen. */}
             <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', gap: 9 }}>
               {canTorch && (
                 <button onClick={toggleTorch} className="eco-btn" style={overlayBtn(torchOn)}
@@ -326,14 +323,14 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
             <div>
               <Icon d={ICONS.barcode} size={40} stroke="rgba(255,255,255,0.9)" sw={1.6} />
               <div style={{ fontSize: 13.5, marginTop: 12, maxWidth: 260, lineHeight: 1.5 }}>
-                Point your camera at a product barcode to get an instant score.
+                Point the camera at a product barcode.
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* One primary action, full width. Stop is secondary and doesn't compete. */}
+      {/* One primary action, full width. Stop is secondary. */}
       <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
         {!live ? (
           <button onClick={start} disabled={busy} className="eco-btn" style={{ ...btnAccent, flex: 1, opacity: busy ? 0.55 : 1 }}>
@@ -364,7 +361,7 @@ export default function BarcodeScanner({ onDetected, onCapture, busy }) {
           display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.muted, marginBottom: 8,
         }}>
           <Icon d={ICONS.keyboard} size={13} stroke={T.muted} sw={1.8} />
-          Or type the number under the barcode
+          Or enter the barcode number
         </label>
         <div className="eco-barcode-entry">
           <input

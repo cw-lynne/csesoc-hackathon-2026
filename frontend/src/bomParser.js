@@ -139,8 +139,8 @@ export function resolveMaterial(raw) {
   const cat = inferCategory(clean)
   const proxy = CATEGORY_PROXY[cat] || CATEGORY_PROXY.plastic
   const reason = cat
-    ? `"${clean}" isn't in the swap library — using ${prettyMat(proxy)} as the closest ${cat} stand-in. Confirm or pick a better fit.`
-    : `Couldn't place "${clean}" in the swap library — using ${prettyMat(proxy)} as a placeholder. Confirm or pick a better fit.`
+    ? `"${clean}" is not in the swap library. Standing in ${prettyMat(proxy)}, the closest ${cat}. Confirm or change it.`
+    : `"${clean}" could not be placed in the swap library. Standing in ${prettyMat(proxy)}. Confirm or change it.`
   return { name: proxy, confidence: 'proxy', reason }
 }
 
@@ -264,7 +264,7 @@ export function parseBomCsv(text, fileName) {
 
   const proxyCount = rows.filter((r) => r.materialConfidence === 'proxy').length
   if (proxyCount) {
-    warnings.push(`${proxyCount} material${proxyCount > 1 ? 's' : ''} weren't in the swap library — we filled in the closest match for you to confirm below.`)
+    warnings.push(`${proxyCount} material${proxyCount > 1 ? 's' : ''} not in the swap library. The closest match was filled in for you to confirm below.`)
   }
 
   const totalKg = rows.reduce((s, b) => s + b.kg, 0)

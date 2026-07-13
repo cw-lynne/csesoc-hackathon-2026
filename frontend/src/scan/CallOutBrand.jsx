@@ -13,15 +13,15 @@ function draftMessage(scan) {
   let reasonLine = ''
   if (r && r.score != null) {
     const worst = Object.entries(r.criteria || {}).sort((a, b) => a[1] - b[1])[0]
-    const because = worst ? ` — the lowest mark was for ${worst[0].toLowerCase()}` : ''
+    const because = worst ? `, with the lowest mark for ${worst[0].toLowerCase()}` : ''
     reasonLine = `It scored ${r.score}/100 for repairability${because}. `
   }
   return (
     `Hi ${brand},\n\n` +
-    `I scanned ${product} on EcoCompass. ${reasonLine}` +
-    `As a customer, repairability and product lifespan matter to me. ` +
-    `Could you share what repair options, spare parts or documentation you offer for it — and whether you plan to improve them?\n\n` +
-    `Thanks!`
+    `I scanned ${product} on ecocompass. ${reasonLine}` +
+    `Repairability matters to me as a customer.\n\n` +
+    `What repair options, spare parts and documentation do you offer for it? Are there plans to improve them?\n\n` +
+    `Thanks`
   )
 }
 
@@ -47,16 +47,16 @@ export default function CallOutBrand({ scan }) {
   if (!open) {
     return (
       <button onClick={openPanel} className="eco-btn" style={{ ...btnGhost, borderColor: T.line }}>
-        <Icon d={ICONS.megaphone} size={15} stroke={T.ink} sw={1.9} /> Call out this brand
+        <Icon d={ICONS.megaphone} size={15} stroke={T.ink} sw={1.9} /> Message the brand
       </button>
     )
   }
 
   return (
     <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: 16 }}>
-      <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>Send {scan.brand || 'the brand'} a note</div>
+      <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>Message {scan.brand || 'the brand'}</div>
       <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, marginBottom: 11 }}>
-        Pre-drafted from your scan — edit it however you like, then copy it or open your mail app.
+        Drafted from your scan. Edit it, then copy it or open your mail app.
       </div>
       <textarea
         value={msg}

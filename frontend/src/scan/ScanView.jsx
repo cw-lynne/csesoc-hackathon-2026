@@ -1,8 +1,7 @@
-// The free consumer "scan a product" page (Yuka-style wedge).
+// Consumer "scan a product" page.
 //
-// Visually on-brand with the B2B app but deliberately set apart with a "Free"
-// eyebrow and a lighter, single-column layout so a shopper understands this is
-// the free tool, not the paid BOM dashboard.
+// Shares the palette with the BOM app but uses a lighter single-column layout so
+// it doesn't read as the BOM dashboard.
 import React, { useRef, useState } from 'react'
 import { T, Icon, ICONS, btnGhost } from './tokens.jsx'
 import BarcodeScanner from './BarcodeScanner.jsx'
@@ -63,8 +62,8 @@ export default function ScanView() {
         Scan a product
       </h1>
       <p style={{ fontSize: 15.5, color: T.ink3, lineHeight: 1.6, margin: '0 0 28px' }}>
-        Point your camera at a barcode — or snap the product — for an instant repairability and carbon
-        score. Verified data where it exists, a clearly-labelled AI estimate where it doesn't.
+        Scan a barcode or photograph the product. Returns a repairability score and a carbon score.
+        Scores are badged Verified or Estimated.
       </p>
 
       {!scan && (
@@ -88,7 +87,7 @@ export default function ScanView() {
         <div style={{ textAlign: 'center', padding: '34px 0', color: T.muted, fontSize: 13.5 }}>
           <div className="eco-spin" style={{ width: 30, height: 30, margin: '0 auto', borderRadius: '50%', border: `3px solid ${T.line}`, borderTopColor: T.accent }} />
           <div style={{ marginTop: 12 }}>{busyLabel}</div>
-          <div style={{ marginTop: 4, fontSize: 11.5, color: T.faint }}>Verified lookup is instant; the AI estimate takes a few seconds.</div>
+          <div style={{ marginTop: 4, fontSize: 11.5, color: T.faint }}>Verified lookup is instant. An AI estimate takes a few seconds.</div>
         </div>
       )}
 
@@ -115,10 +114,9 @@ export default function ScanView() {
       )}
 
       <p style={{ fontSize: 11, color: T.faint, lineHeight: 1.6, marginTop: 40 }}>
-        Repairability scores come from the French durability/repairability index. Environmental grades use
-        the verified Open Food Facts Eco-Score where a product has one, and otherwise fall back to a
-        clearly-labelled AI estimate from the product category. Every score on this page is badged with
-        where it came from — Verified or Estimated.
+        Repairability: French durability/repairability index. Environmental grade: Open Food Facts
+        Eco-Score where the product has one, otherwise an AI estimate from the product category.
+        Every score is badged Verified or Estimated.
       </p>
     </div>
   )

@@ -84,8 +84,8 @@ function BioBadge({ big }) {
 // Top navigation
 // ---------------------------------------------------------------------------
 function TopNav({ view, setView }) {
-  // Padding is owned by .eco-navtab so it can grow into a proper touch target
-  // on a phone, where the tabs sit on their own scrollable row.
+  // Padding is owned by .eco-navtab so it can grow into a touch target on a
+  // phone, where the tabs sit on their own scrollable row.
   const tab = (active) => ({
     background: 'transparent', border: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
     borderBottom: `2px solid ${active ? T.accent : 'transparent'}`,
@@ -124,9 +124,9 @@ function UploadView({ fileName, onFile, onSample, onLoadSample, busy, busyLabel,
   return (
     <div className="eco-page eco-page--hero" style={{ maxWidth: 660, paddingBottom: 88 }}>
       <div className="mono" style={eyebrow}>Carbon + repairability engine</div>
-      <h1 className="eco-h1" style={{ fontWeight: 600, letterSpacing: '-0.035em', margin: '18px 0 18px', lineHeight: 1.08 }}>Score any build on carbon and repairability.</h1>
-      <p style={{ fontSize: 17, color: T.ink3, lineHeight: 1.6, margin: '0 0 24px', maxWidth: 540 }}>Drop in a bill of materials. ecocompass finds lower-carbon material swaps — and refuses the ones it can't justify, telling you why — then scores how repairable and long-lived the design is, with concrete fixes to raise it.</p>
-      <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6, margin: '0 0 34px', maxWidth: 540 }}>Every figure is a transparent, sourced estimate — each material links to its primary source and the reason behind a rejected swap, so you can check our working, not just trust a number.</p>
+      <h1 className="eco-h1" style={{ fontWeight: 600, letterSpacing: '-0.035em', margin: '18px 0 18px', lineHeight: 1.08 }}>Carbon and repairability scoring for a BOM.</h1>
+      <p style={{ fontSize: 17, color: T.ink3, lineHeight: 1.6, margin: '0 0 24px', maxWidth: 540 }}>Upload a bill of materials. Returns lower-carbon swap candidates per line, the reason any candidate was rejected, a repairability score, and design fixes to raise it.</p>
+      <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6, margin: '0 0 34px', maxWidth: 540 }}>Figures are estimates. Each material links to its primary source.</p>
 
       <Reveal index={0}>
         <label style={{ display: 'block', background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: '44px 30px', cursor: busy ? 'default' : 'pointer', textAlign: 'center', transition: 'border-color .18s, background .18s' }}
@@ -137,8 +137,8 @@ function UploadView({ fileName, onFile, onSample, onLoadSample, busy, busyLabel,
           <div style={{ width: 46, height: 46, margin: '0 auto 16px', borderRadius: 11, border: `1px solid ${T.line}`, background: T.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon size={22} stroke={T.ink2} sw={1.6} d={['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']} />
           </div>
-          <div style={{ fontSize: 15, fontWeight: 500 }}>{busy ? (busyLabel || 'Reading…') : (fileName || 'Drop your BOM file here')}</div>
-          <div style={{ fontSize: 13, color: T.muted, marginTop: 5 }}>CSV parsed instantly · PDF, Excel or a photo read with AI · click to browse</div>
+          <div style={{ fontSize: 15, fontWeight: 500 }}>{busy ? (busyLabel || 'Reading…') : (fileName || 'Drop a BOM file here')}</div>
+          <div style={{ fontSize: 13, color: T.muted, marginTop: 5 }}>CSV, Excel, PDF or image · click to browse</div>
         </label>
       </Reveal>
 
@@ -147,7 +147,7 @@ function UploadView({ fileName, onFile, onSample, onLoadSample, busy, busyLabel,
       )}
 
       <Reveal index={1} style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12.5, color: T.muted }}>No file? Try a sample CSV:</span>
+        <span style={{ fontSize: 12.5, color: T.muted }}>Sample CSVs:</span>
         <button disabled={busy} onClick={() => onLoadSample('good')} style={chip}>Clean</button>
         <button disabled={busy} onClick={() => onLoadSample('mixed')} style={chip}>Mixed</button>
         <button disabled={busy} onClick={() => onLoadSample('bad')} style={chip}>Messy</button>
@@ -169,7 +169,7 @@ function UploadView({ fileName, onFile, onSample, onLoadSample, busy, busyLabel,
 const STATUS = {
   green: { color: T.good, soft: 'rgba(91,122,78,0.12)', ring: 'rgba(91,122,78,0.34)', label: 'Recommended swap' },
   yellow: { color: T.warn, soft: 'rgba(168,122,60,0.12)', ring: 'rgba(168,122,60,0.34)', label: 'Review trade-offs' },
-  red: { color: T.bad, soft: 'rgba(176,87,110,0.12)', ring: 'rgba(176,87,110,0.40)', label: 'Flagged — no viable swap' },
+  red: { color: T.bad, soft: 'rgba(176,87,110,0.12)', ring: 'rgba(176,87,110,0.40)', label: 'No viable swap' },
 }
 
 const signedMoney = (v) => (v < -0.005 ? '−$' : '+$') + Math.abs(v).toFixed(2)
@@ -194,7 +194,7 @@ function PrioritySlider({ value, onChange, loading }) {
       </div>
       <div className="eco-slider-row">
         <span style={{ fontSize: 11.5, color: value < 0.5 ? T.ink : T.muted, fontWeight: 500, whiteSpace: 'nowrap' }}>Cost-focused</span>
-        <input type="range" min={0} max={100} value={pct} aria-label="Ranking priority — cost versus carbon"
+        <input type="range" min={0} max={100} value={pct} aria-label="Ranking priority: cost versus carbon"
           onChange={(e) => onChange(Number(e.target.value) / 100)}
           style={{ accentColor: T.accent, cursor: 'pointer' }} />
         <span style={{ fontSize: 11.5, color: value > 0.5 ? T.ink : T.muted, fontWeight: 500, whiteSpace: 'nowrap' }}>Carbon-focused</span>
@@ -240,8 +240,8 @@ function ScaledImpact({ co2eSavedPerUnit, annualVolume, setAnnualVolume }) {
 // RadarPanel (recharts) is lazy-loaded — see the `lazy(() => import('./RadarCell.jsx'))`
 // declaration near the top. Usages below wrap it in <Suspense>.
 
-// The per-component "results table": the top few viable candidates the engine
-// ranked, plus the most tempting rejected ones with the reason they were cut.
+// Per-component candidates: the top viable ones the engine ranked, plus the
+// lowest-carbon rejected ones with the reason each was cut.
 function CandidatesTable({ line }) {
   const viable = line.viable.slice(0, 4)
   const rejected = line.rejected.slice(0, 3)
@@ -295,19 +295,18 @@ function CandidatesTable({ line }) {
   )
 }
 
-// Prominent rejection callout — the credibility feature. Names the requirement
-// that must be met, then the seductive low-carbon options and exactly why each
-// was turned down.
+// Rejection callout. Names the requirement the part must meet, then the
+// lower-carbon candidates and the requirement each one failed.
 function RejectionPanel({ line }) {
   const shown = line.rejected.slice(0, 4)
   return (
     <div style={{ background: STATUS.red.soft, border: `1px solid ${STATUS.red.ring}`, borderRadius: 12, padding: '15px 17px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <Icon size={15} stroke={T.bad} sw={2.2} d={['M12 9v4', 'M12 17h.01', 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z']} />
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#8A3F52' }}>No viable swap — kept the original</div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#8A3F52' }}>No viable swap. Original kept.</div>
       </div>
       <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.55, marginBottom: 12 }}>
-        This part must clear <strong>{line.requirementText}</strong>. Every lower-impact candidate fails at least one of those bars:
+        Requirement: <strong>{line.requirementText}</strong>. Every lower-impact candidate fails at least one:
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {shown.map((c) => (
@@ -336,8 +335,8 @@ function ProsCons({ line }) {
   )
   return (
     <div className="eco-grid-2" style={{ gap: 18 }}>
-      {col('Pros', line.pros, T.accent, ['M20 6 9 17l-5-5'], 'No notable gains flagged.')}
-      {col('Cons', line.cons, T.bad, ['M18 6 6 18M6 6l12 12'], 'No material trade-offs identified.')}
+      {col('Pros', line.pros, T.accent, ['M20 6 9 17l-5-5'], 'None.')}
+      {col('Cons', line.cons, T.bad, ['M18 6 6 18M6 6l12 12'], 'None.')}
     </div>
   )
 }
@@ -569,10 +568,10 @@ function AiSummary({ narrative, onRegenerate }) {
         )}
       </div>
       {narrative.loading ? (
-        <div style={{ fontSize: 13, color: T.muted }}>Writing a grounded summary…</div>
+        <div style={{ fontSize: 13, color: T.muted }}>Writing summary…</div>
       ) : narrative.error ? (
         <div style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.55 }}>
-          AI summary unavailable — <span style={{ color: T.ink3 }}>{narrative.error}</span> The analysis above is unaffected.
+          Summary unavailable: <span style={{ color: T.ink3 }}>{narrative.error}</span> The analysis above is unaffected.
         </div>
       ) : (
         <div style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.65 }}>{narrative.text}</div>
@@ -584,9 +583,8 @@ function AiSummary({ narrative, onRegenerate }) {
 // Green/amber/red for a 0-100 score.
 const scoreColor = (v) => (v >= 75 ? T.good : v >= 50 ? T.warn : T.bad)
 
-// The headline dual-lens scorecard: one blended score built from CARBON (the
-// swap engine) and LONGEVITY (the repairability engine, backend/data). This is
-// the reframe — the product scores a build on both, not just embodied carbon.
+// Headline scorecard: the blended score, plus its two halves — carbon (the swap
+// engine) and longevity (the repairability engine, backend/data).
 function ScoreBanner({ summary }) {
   const rep = summary.repairability
   const overall = summary.overall
@@ -611,8 +609,8 @@ function ScoreBanner({ summary }) {
   )
 }
 
-// Actionable design fixes ranked by the point gain each unlocks — the output
-// that turns a score into advice. Sourced from scoring_rules.json deltas.
+// Design fixes, ranked by the point gain each recovers. Sourced from the
+// scoring_rules.json deltas.
 const FIX_ICON = {
   fastening: ['M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z'],
   sourcing: ['M20 7h-9', 'M14 17H5', 'M17 3l3 3-3 3', 'M7 21l-3-3 3-3'],
@@ -625,11 +623,11 @@ function DesignFixes({ recommendations }) {
     <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, padding: '18px 20px', marginBottom: 26 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <Icon size={15} stroke={T.accent} sw={1.9} d={['M12 20h9', 'M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z']} />
-        <span style={{ fontSize: 13.5, fontWeight: 600 }}>Design for longevity</span>
+        <span style={{ fontSize: 13.5, fontWeight: 600 }}>Design fixes</span>
         <span className="mono" style={{ fontSize: 9.5, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.08em', border: `1px solid ${T.line}`, borderRadius: 99, padding: '2px 7px' }}>{recommendations.length} fixes</span>
       </div>
       <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, marginBottom: 14 }}>
-        Concrete changes that raise the repairability score, ranked by the points each recovers.
+        Changes that raise the repairability score, ranked by points recovered.
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {recommendations.map((f, i) => (
@@ -649,10 +647,9 @@ function DesignFixes({ recommendations }) {
   )
 }
 
-// One friendly mass entry: type freely, or nudge with − / +. Holds its own text
-// state so mid-typing (e.g. "0.", "0.3") never fights the coerced model value,
-// while every change still flows to onSet so the analysis stays live. When the
-// field carries a not-yet-confirmed estimate, an accept (✓) button confirms it
+// Mass entry: type, or nudge with − / +. Holds its own text state so a partial
+// value mid-typing ("0.", "0.3") isn't fought by the coerced model value; every
+// change still flows to onSet. An unconfirmed estimate gets a ✓ to accept it
 // as-is; typing or nudging also counts as confirming.
 function MassField({ index, initial, filled, estimated, inputRef, onSet, onEnter }) {
   const [text, setText] = useState(initial)
@@ -711,10 +708,9 @@ function MassField({ index, initial, filled, estimated, inputRef, onSet, onEnter
   )
 }
 
-// Rows whose mass couldn't be read from the file get a friendly entry here so the
-// user supplies their real figure; each entry updates the BOM and re-runs the
-// analysis. Blank inputs keep the provisional 1 kg estimate. The panel tracks
-// progress and turns calm-green once every mass is filled in.
+// Rows whose mass couldn't be read from the file. Each entry updates the BOM and
+// re-runs the analysis. A blank input keeps the provisional 1 kg. The panel goes
+// green once every mass is filled in.
 function MissingMassPanel({ bom, missing, onSet }) {
   const inputRefs = useRef({})
   if (!missing.length) return null
@@ -752,7 +748,7 @@ function MissingMassPanel({ bom, missing, onSet }) {
               : <Icon size={15} stroke={T.warn} sw={2.1} d={['M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', 'M12 9v4', 'M12 17h.01']} />}
           </span>
           <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>
-            {allDone ? 'All masses added' : 'Add the missing masses'}
+            {allDone ? 'Masses confirmed' : 'Missing masses'}
           </span>
         </div>
         <div className="mono" style={{ fontSize: 11.5, fontWeight: 600, color: headColor }}>
@@ -766,10 +762,10 @@ function MissingMassPanel({ bom, missing, onSet }) {
 
       <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
         {allDone
-          ? 'Every component now uses the mass you confirmed — the carbon and cost figures below reflect your real numbers.'
+          ? 'Carbon and cost below use your figures.'
           : anyEst
-            ? <>We couldn't read a mass for these components, so we've estimated one for each (marked <span className="mono" style={{ fontWeight: 700, color: T.warn }}>EST</span>). Accept it with ✓, nudge it, or type the real figure — the numbers below update instantly.</>
-            : <>We couldn't read a mass for these components, so each is a provisional 1&nbsp;kg. Enter the real figure to make the carbon and cost numbers accurate.</>}
+            ? <>No mass in the file for these components. Each is an estimate (<span className="mono" style={{ fontWeight: 700, color: T.warn }}>EST</span>). Accept with ✓ or type the real figure. Results update on change.</>
+            : <>No mass in the file for these components. Each defaults to 1&nbsp;kg. Enter the real figure for accurate carbon and cost.</>}
       </div>
 
       <div style={{ display: 'grid', gap: 8 }}>
@@ -797,7 +793,7 @@ function MissingMassPanel({ bom, missing, onSet }) {
 
       {total > 1 && !allDone && (
         <div className="mono" style={{ fontSize: 10.5, color: T.faint, marginTop: 11 }}>
-          Tip — press Enter to jump to the next field.
+          Press Enter to jump to the next field.
         </div>
       )}
     </div>
@@ -833,7 +829,7 @@ function MaterialReviewPanel({ bom, review, onSetMaterial }) {
               : <Icon size={15} stroke={T.accent} sw={2.1} d={['M11 3 8 9l-6 .75 4.13 4.62L5 21l6-3 6 3-1.13-6.63L20 9.75 14 9z']} />}
           </span>
           <span style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>
-            {allDone ? 'Materials confirmed' : 'Confirm the materials we matched'}
+            {allDone ? 'Materials confirmed' : 'Unmatched materials'}
           </span>
         </div>
         <div className="mono" style={{ fontSize: 11.5, fontWeight: 600, color: headColor }}>
@@ -847,8 +843,8 @@ function MaterialReviewPanel({ bom, review, onSetMaterial }) {
 
       <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.5, marginBottom: 14 }}>
         {allDone
-          ? 'Every material below now uses a library material you picked — nothing was dropped.'
-          : "These materials weren't an exact match in the swap library, so we stood in the closest one. Confirm each or choose a better fit — the analysis updates instantly."}
+          ? 'Every row uses a library material you picked.'
+          : 'No exact match in the swap library. Each row is standing in the closest material. Confirm or change it. Results update on change.'}
       </div>
 
       <div style={{ display: 'grid', gap: 8 }}>
@@ -927,10 +923,10 @@ function IncentivesPanel({ productName, materials }) {
     <div className="no-print" style={{ marginTop: 30 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <Icon size={16} stroke={T.accent} sw={1.9} d={['M3 21h18', 'M5 21V10l7-5 7 5v11', 'M9 21v-6h6v6']} />
-        <span style={{ fontSize: 15, fontWeight: 600 }}>Government incentives that could help</span>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>Government incentives</span>
       </div>
       <div style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.55, marginBottom: 14, maxWidth: 640 }}>
-        Building greener can pay back twice. ecocompass searches the live web for grants, rebates and tax credits in your region that reward lower-carbon materials, recycled content and repairable design — each with a source link so you can check it yourself.
+        Web search for grants, rebates and tax credits in your region covering lower-carbon materials, recycled content and repairable design. Each result carries a source link.
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: state.status === 'idle' ? 0 : 18 }}>
@@ -941,12 +937,12 @@ function IncentivesPanel({ productName, materials }) {
           <Icon size={14} stroke={T.page} sw={2} d={['M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z', 'm21 21-4.35-4.35']} />
           {state.status === 'loading' ? 'Searching the web…' : state.status === 'done' ? 'Search again' : 'Find incentives'}
         </button>
-        {state.status === 'loading' && <span style={{ fontSize: 12, color: T.muted }}>This can take ~15 seconds — reading live sources.</span>}
+        {state.status === 'loading' && <span style={{ fontSize: 12, color: T.muted }}>~15 seconds.</span>}
       </div>
 
       {state.status === 'error' && (
         <div style={{ background: 'rgba(176,87,110,0.08)', border: '1px solid rgba(176,87,110,0.34)', color: '#8A3F52', fontSize: 12.5, lineHeight: 1.55, borderRadius: 12, padding: '12px 15px' }}>
-          Couldn't fetch incentives — {state.error} This needs the backend running with web search and an API key; the analysis above is unaffected.
+          Incentive search failed: {state.error} Requires the backend with web search and an API key. The analysis above is unaffected.
         </div>
       )}
 
@@ -979,7 +975,7 @@ function IncentivesPanel({ productName, materials }) {
             )
           })}
           <div style={{ fontSize: 11, color: T.faint, lineHeight: 1.6, marginTop: 2 }}>
-            Gathered by AI from a live web search of {region} sources — treat as a starting point and confirm eligibility and current status at each program's official page before relying on it.
+            Gathered by AI from a web search of {region} sources. Confirm eligibility and current status on each program's official page before relying on it.
           </div>
         </div>
       )}
@@ -1162,7 +1158,7 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, margin: '4px 0 14px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <div style={{ fontSize: 15, fontWeight: 600 }}>Analysis summary</div>
-              <span className="no-print mono" title={source === 'backend' ? 'Scored by the FastAPI backend (/analyze-bom)' : 'Backend unreachable — scored by the built-in engine'}
+              <span className="no-print mono" title={source === 'backend' ? 'Scored by the FastAPI backend (/analyze-bom)' : 'Backend unreachable. Scored by the built-in engine.'}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: source === 'backend' ? T.good : T.muted, background: source === 'backend' ? 'rgba(91,122,78,0.12)' : T.cardAlt, border: `1px solid ${source === 'backend' ? 'rgba(91,122,78,0.34)' : T.line}`, borderRadius: 99, padding: '3px 9px' }}>
                 <span style={{ width: 5, height: 5, borderRadius: 99, background: source === 'backend' ? T.good : T.faint }} />
                 {source === 'backend' ? 'via API' : 'offline engine'}
@@ -1180,7 +1176,7 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
             <Reveal index={0}><StatCard label="CO₂e saved / unit" value={`${summary.co2eSaved.toFixed(1)} kg`} sub={`−${summary.co2ePct}% vs baseline spec`} color={T.accent} /></Reveal>
             <Reveal index={1}><StatCard label="Cost delta / unit" value={signedMoney(summary.costDelta)} sub={summary.costUp ? 'added material cost' : 'net material saving'} color={summary.costUp ? T.warn : T.good} /></Reveal>
             <Reveal index={2}><StatCard label="Viable swaps" value={`${summary.viableCount}`} sub={`of ${bomInput.length} components`} color={T.good} /></Reveal>
-            <Reveal index={3}><StatCard label="Flagged" value={`${summary.flaggedCount}`} sub={summary.flaggedCount ? 'no viable swap — review' : 'none — all resolved'} color={summary.flaggedCount ? T.bad : T.ink3} /></Reveal>
+            <Reveal index={3}><StatCard label="Flagged" value={`${summary.flaggedCount}`} sub={summary.flaggedCount ? 'no viable swap' : 'none'} color={summary.flaggedCount ? T.bad : T.ink3} /></Reveal>
           </div>
 
           <ScaledImpact co2eSavedPerUnit={summary.co2eSaved} annualVolume={annualVolume} setAnnualVolume={setAnnualVolume} />
@@ -1191,7 +1187,7 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
 
           {/* Per-component results table (expand a row for radar + reasoning) */}
           <div style={{ fontSize: 15, fontWeight: 600, margin: '30px 0 12px' }}>
-            Component suggestions <span style={{ color: T.muted, fontWeight: 400 }}>· click a row for the property radar &amp; candidate breakdown</span>
+            Component suggestions <span style={{ color: T.muted, fontWeight: 400 }}>· click a row for the property radar and candidate breakdown</span>
           </div>
           <div style={{ background: T.card, border: `1px solid ${T.line}`, borderRadius: 14, overflow: 'hidden' }}>
             <div style={{ overflowX: 'auto' }}>
@@ -1216,7 +1212,7 @@ function ResultsView({ setView, bom: initialBom, meta, warnings }) {
           </div>
 
           <div className="no-print" style={{ fontSize: 11.5, color: T.faint, marginTop: 18, lineHeight: 1.65 }}>
-            Rankings recompute live from the priority slider. A swap is only offered when it clears the part's functional requirements — anything that fails is flagged with the specific reason, never silently dropped. The repairability score is a transparent point model — a base score adjusted for fastening, sourcing, failure risk, recycling and service life. Figures marked <em>estimated</em> in the dataset are indicative.
+            Rankings recompute from the priority slider. A swap is offered only if it clears the part's functional requirements; candidates that fail are listed with the requirement they failed. The repairability score is a point model: a base score adjusted for fastening, sourcing, failure risk, recycling and service life. Figures marked <em>estimated</em> in the dataset are indicative.
           </div>
 
           <IncentivesPanel
@@ -1271,7 +1267,7 @@ function LibraryView({ query, setQuery, category, setCategory, sortKey, sortDir,
         </div>
       </div>
 
-      <div style={{ fontSize: 13, color: T.muted, margin: '-14px 0 22px', lineHeight: 1.6 }}>This library is community-sourced. See a gap or a better figure? <a href="#" onClick={(e) => { e.preventDefault(); openSuggest() }} style={{ color: T.accent, fontWeight: 500, borderBottom: '1px solid currentColor' }}>Suggest a material</a> and we'll review it for inclusion.</div>
+      <div style={{ fontSize: 13, color: T.muted, margin: '-14px 0 22px', lineHeight: 1.6 }}>Community-sourced. Missing a material, or have a better figure? <a href="#" onClick={(e) => { e.preventDefault(); openSuggest() }} style={{ color: T.accent, fontWeight: 500, borderBottom: '1px solid currentColor' }}>Suggest a material</a>.</div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
@@ -1365,10 +1361,10 @@ function SuggestModal({ open, sent, form, setForm, onClose, onSubmit }) {
         {sent ? (
           <>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-              <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-0.02em' }}>Thanks for the suggestion</div>
+              <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-0.02em' }}>Submitted</div>
               {closeBtn}
             </div>
-            <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginTop: 10 }}>We'll review <strong>{form.name || 'your material'}</strong> and, if the data checks out, add it to the library with a source citation.</div>
+            <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginTop: 10 }}><strong>{form.name || 'Your material'}</strong> goes to review. If the data checks out it gets added with a source citation.</div>
             <button onClick={onClose} style={{ ...btnSolid, marginTop: 22, padding: '12px 22px', fontSize: 14 }}>Done</button>
           </>
         ) : (
@@ -1376,7 +1372,7 @@ function SuggestModal({ open, sent, form, setForm, onClose, onSubmit }) {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <div>
                 <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-0.02em' }}>Suggest a material</div>
-                <div style={{ fontSize: 13, color: T.muted, marginTop: 5, lineHeight: 1.5 }}>Know a material with good sourced data on cost, carbon or recyclability? Add it here.</div>
+                <div style={{ fontSize: 13, color: T.muted, marginTop: 5, lineHeight: 1.5 }}>Materials with sourced data on cost, carbon or recyclability.</div>
               </div>
               {closeBtn}
             </div>
@@ -1393,15 +1389,15 @@ function SuggestModal({ open, sent, form, setForm, onClose, onSubmit }) {
                 </select>
               </div>
               <div>
-                <div style={label}>Why should we add it?</div>
-                <textarea placeholder="Notable properties, where you'd use it, why it's a good swap…" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} style={{ ...field, resize: 'vertical' }} />
+                <div style={label}>Notes</div>
+                <textarea placeholder="Properties, typical use, why it's a good swap" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} style={{ ...field, resize: 'vertical' }} />
               </div>
               <div>
-                <div style={label}>Source link <span style={{ fontWeight: 400, color: T.muted }}>(optional but preferred)</span></div>
+                <div style={label}>Source link <span style={{ fontWeight: 400, color: T.muted }}>(optional)</span></div>
                 <input type="text" placeholder="https://…" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} style={field} />
               </div>
               <div>
-                <div style={label}>Your email <span style={{ fontWeight: 400, color: T.muted }}>(optional, in case we have questions)</span></div>
+                <div style={label}>Email <span style={{ fontWeight: 400, color: T.muted }}>(optional)</span></div>
                 <input type="text" placeholder="you@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} style={field} />
               </div>
             </div>

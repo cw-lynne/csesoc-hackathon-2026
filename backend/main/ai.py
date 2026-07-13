@@ -73,9 +73,16 @@ Rules:
 - Name one or two of the strongest carbon swaps by component name.
 - Name the single highest-impact design fix from top_design_fixes (its component
   and action) as the clearest way to raise the repairability score.
-- If any component has status "red" it was flagged and kept as-is — say so and
-  give the rejection reason. This honesty is the whole point; do not gloss over it.
-- Neutral, factual tone. No emoji, no salesy language."""
+- If any component has status "red" it was flagged and kept as-is. Say so and give
+  the rejection reason. Do not gloss over it.
+
+Style — write like an engineer, not a marketer:
+- Short declarative sentences. State the finding, then stop.
+- No em dashes. Use a full stop or a comma.
+- No "not just X, but Y", no "isn't just X — it's Y", no rhetorical questions.
+- No hedging adverbs (notably, significantly, importantly, crucially, remarkably).
+- No praise for the design, the swap, or the result. Report, don't editorialise.
+- No emoji, no markdown, no headings, no sales language."""
 
 
 def _overall(eco, repair):
@@ -342,13 +349,13 @@ def _resolve_material(raw, category_hint=None):
     if cat in _CATEGORY_PROXY:
         proxy = _CATEGORY_PROXY[cat]
         return proxy, "proxy", (
-            f'"{clean}" isn\'t in the swap library — using {proxy.replace("_", " ")} '
-            f'as the closest {cat} stand-in. Confirm or pick a better fit.'
+            f'"{clean}" is not in the swap library. Standing in {proxy.replace("_", " ")}, '
+            f'the closest {cat}. Confirm or change it.'
         )
     proxy = _CATEGORY_PROXY.get("plastic") or _KNOWN[0]
     return proxy, "proxy", (
-        f'Couldn\'t place "{clean}" in the swap library — using {proxy.replace("_", " ")} '
-        f'as a placeholder. Confirm or pick a better fit.'
+        f'"{clean}" could not be placed in the swap library. '
+        f'Standing in {proxy.replace("_", " ")}. Confirm or change it.'
     )
 
 
@@ -519,13 +526,13 @@ def extract_bom(data, filename):
     else:
         if proxy_count:
             warnings.append(
-                f"{proxy_count} material{'s' if proxy_count > 1 else ''} weren't in the swap "
-                "library — we filled in the closest match for you to confirm below."
+                f"{proxy_count} material{'s' if proxy_count > 1 else ''} not in the swap "
+                "library. The closest match was filled in for you to confirm below."
             )
         if est_count:
             warnings.append(
-                f"{est_count} component{'s' if est_count > 1 else ''} had no mass — we estimated "
-                "one for you to confirm below."
+                f"{est_count} component{'s' if est_count > 1 else ''} had no mass. An estimate "
+                "was filled in for you to confirm below."
             )
 
     product = (str(parsed.get("product_name") or "").strip() or _pretty_product(filename))
@@ -542,12 +549,11 @@ def extract_bom(data, filename):
 
 
 # ---------------------------------------------------------------------------
-# 4) Consumer scan mode — carbon estimate, product-from-photo, scan narrative
+# 4) Consumer scan mode: carbon estimate, product-from-photo, scan narrative
 # ---------------------------------------------------------------------------
-# These power the free "scan a product" wedge. They are deliberately thin and
-# self-contained: they reuse the vision/JSON helpers above but never touch the
-# B2B swap engine. Every carbon number is looked up from a static table — the AI
-# only picks the category — so an estimate is clearly labelled and never invented.
+# These reuse the vision/JSON helpers above but do not touch the swap engine.
+# Every carbon number is looked up from a static table and the AI only picks the
+# category, so an estimate is labelled as such and is never invented.
 _CARBON_BANDS_PATH = Path(__file__).resolve().parent.parent / "data" / "category_carbon_bands.json"
 _CARBON_BANDS = None
 
@@ -571,7 +577,8 @@ Rules:
   Never claim certainty. Set "confidence" to "low" normally, or "medium" ONLY when the product
   name clearly and unambiguously names a category on the list.
 - "materials" is your best guess at the 2-4 dominant materials, lowercase.
-- "rationale" is ONE short plain sentence a shopper can read.
+- "rationale" is ONE short declarative sentence. State the reason, then stop. No em dashes,
+  no praise, no sales language.
 
 Respond with ONLY this JSON and nothing else:
 {"category": string, "materials": [string], "confidence": "low"|"medium", "rationale": string}"""
@@ -654,7 +661,8 @@ Rules:
 - "criteria" gives five 0-100 sub-scores for the axes below.
 - Keep "confidence" "low" normally, or "medium" only when the product type's repairability is
   well established (e.g. a Fairphone, a classic cast-iron pan).
-- "rationale" is ONE short plain sentence a shopper can read.
+- "rationale" is ONE short declarative sentence. State the reason, then stop. No em dashes,
+  no praise, no sales language.
 
 Respond with ONLY this JSON and nothing else:
 {"score": number, "confidence": "low"|"medium", "rationale": string,
@@ -753,21 +761,26 @@ def extract_product_from_image(data, filename):
     }
 
 
-_SCAN_NARRATIVE_SYSTEM = """You write a 2-3 sentence plain-language verdict for a consumer product scanner.
-You are given a JSON object with scores that have ALREADY been computed. Use ONLY those figures — never
+_SCAN_NARRATIVE_SYSTEM = """You write a 2-3 sentence verdict for a consumer product scanner.
+You are given a JSON object with scores that have ALREADY been computed. Use ONLY those figures. Never
 invent a number, a material, or a claim not present in the JSON.
 
 Rules:
-- Mention the repairability grade and the carbon/environmental grade in plain words. If a score is null,
-  say we don't have that data yet — do not guess one.
+- State the repairability grade and the carbon/environmental grade. If a score is null, say there is no
+  data for it. Do not guess one.
 - Repairability: check `repairability.source`. "verified_fr_index" = a VERIFIED score from the French
-  index; "ai_estimated" = an AI ESTIMATE from the product type (not measured); "not_found"/null = no data
-  yet. State which it is and never blur verified vs estimated.
+  index; "ai_estimated" = an AI ESTIMATE from the product type (not measured); "not_found"/null = no data.
+  State which it is. Never blur verified vs estimated.
 - For the carbon/environmental grade, check `carbon.verified`: if true it is a VERIFIED environmental
   score from Open Food Facts (a measured Eco-Score, not a guess); if false/absent it is an AI ESTIMATE
-  from the product category (not measured). Say which one it is and never blur verified vs estimated.
-- If an alternative is provided, mention it by name as a better-scoring option.
-- Warm, direct, shopper-friendly. No markdown, no emoji, no headings."""
+  from the product category (not measured). State which it is. Never blur verified vs estimated.
+- If an alternative is provided, name it as a better-scoring option.
+
+Style:
+- Short declarative sentences. State the fact, then stop.
+- No em dashes. No "not just X, but Y". No rhetorical questions.
+- No adjectives of praise or alarm. Report the score, don't sell or scold.
+- No markdown, no emoji, no headings."""
 
 
 def generate_scan_narrative(scan):
